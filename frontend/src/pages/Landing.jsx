@@ -15,14 +15,17 @@ const SUGGESTIONS = [
 
 export default function Landing() {
   const [goal, setGoal] = useState("");
-  const [model, setModel] = useState("deepseek/deepseek-chat-v3.1:free");
+  const [model, setModel] = useState("openrouter/free");
   const [models, setModels] = useState([]);
   const [busy, setBusy] = useState(false);
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const nav = useNavigate();
 
   useEffect(() => {
-    api.listModels().then((r) => setModels(r.models || [])).catch(() => {});
+    api.listModels().then((r) => {
+      setModels(r.models || []);
+      if (r.default) setModel(r.default);
+    }).catch(() => {});
     const t = setInterval(() => setPlaceholderIdx((i) => (i + 1) % SUGGESTIONS.length), 3500);
     return () => clearInterval(t);
   }, []);

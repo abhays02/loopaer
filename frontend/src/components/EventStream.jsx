@@ -88,8 +88,8 @@ export default function EventStream({ events, live }) {
             return (
               <motion.div
                 key={ev.id}
-                initial={{ opacity: 0, x: 20, filter: "blur(4px)" }}
-                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ type: "spring", stiffness: 280, damping: 24 }}
                 className="mb-1.5"
                 data-testid={`event-${ev.type}`}

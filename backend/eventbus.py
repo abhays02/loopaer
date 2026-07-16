@@ -12,6 +12,7 @@ class EventBus:
         self._subs: Dict[str, Set[asyncio.Queue]] = defaultdict(set)
         # persistent buffer per session (last N events, for late subscribers)
         self._buffer: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+        self._counter: Dict[str, int] = defaultdict(int)
         self._max_buffer = 800
 
     def subscribe(self, session_id: str) -> asyncio.Queue:
@@ -29,8 +30,10 @@ class EventBus:
         self._subs[session_id].discard(q)
 
     async def emit(self, session_id: str, type_: str, payload: Dict[str, Any] | None = None):
+        self._counter[session_id] += 1
+        cnt = self._counter[session_id]
         event = {
-            "id": f"ev_{int(datetime.now(timezone.utc).timestamp()*1000)}_{len(self._buffer[session_id])}",
+            "id": f"ev_{session_id}_{cnt}",
             "session_id": session_id,
             "type": type_,
             "ts": datetime.now(timezone.utc).isoformat(),
