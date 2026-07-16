@@ -1,0 +1,46 @@
+{
+  "summary": "Comprehensive backend + frontend testing of Lumen Runtime. All 12 pytest backend tests PASS (models, sessions, planner events, pause/resume, branch, WebSocket handshake, full run-all pipeline in ~90s, skills list). Frontend workbench flow works end-to-end — landing loads, launch navigates to /runtime/{sid}, autostart triggers pipeline, WebSocket streams live events (51+ events observed), all 5 tabs (plan/knowledge/confidence/skill/replay) render, bottom dock exposes all pipeline buttons + model switcher dropdown, loop inspector shows pause/cancel/inject controls, replay scrubber + event density heatmap visible. Minor React key warnings in EventStream/ReplayScrubber and a Landing default-model mismatch found.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "uvicorn --reload watches /app/backend", "issue": "Placing tests under /app/backend/tests triggers uvicorn reload during test runs; combined with background run-all task the shutdown hangs ('Waiting for background tasks to complete'), causing 502s. Mitigation: tests moved to /app/tests/. Recommend excluding tests/ dir from reload watcher or adding graceful task cancellation on shutdown."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "EventStream", "issue": "React warning: 'Each child in a list should have a unique key prop' — events likely mapped without stable key (use ev.id).", "selector": "EventStream.jsx", "priority": "LOW"},
+      {"component": "ReplayScrubber", "issue": "Same missing 'key' prop React warning.", "selector": "ReplayScrubber.jsx", "priority": "LOW"},
+      {"component": "Framer Motion animations", "issue": "Console warnings 'Invalid keyframe value for property filter: blur(-0.0…px)' — an animation interpolates blur into negative values (blur cannot be negative). Clamp min to 0.", "selector": "motion animate={{ filter: 'blur(...)' }}", "priority": "LOW"},
+      {"component": "Landing default model", "issue": "Landing.jsx hardcodes default model as 'deepseek/deepseek-chat-v3.1:free' which is NOT in /api/models list (only 'deepseek/deepseek-chat-v3.1' paid variant exists). Backend default is 'openrouter/free'. This causes initial requests to fail with OpenRouter 404 until fallback cascade kicks in (seen in backend logs). Recommendation: default state to the value returned by GET /api/models 'default' field.", "selector": "src/pages/Landing.jsx:18", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Runtime workbench", "issues": ["Model switcher dropdown overlaps LoopInspector at bottom right when opened on smaller viewports (minor overlap observed in screenshot)"]}
+    ]
+  },
+  "test_report_links": ["/app/tests/test_lumen_runtime.py", "/app/test_reports/pytest/pytest_results.xml", "/app/test_reports/pytest/pytest.log"],
+  "action_items": [
+    "Fix Landing.jsx default model — set to models.default from GET /api/models (currently hardcoded to non-existent 'deepseek/deepseek-chat-v3.1:free').",
+    "Add stable React keys to EventStream and ReplayScrubber list renders (use ev.id).",
+    "Clamp Framer Motion blur animation values to >= 0 to eliminate console warnings.",
+    "Consider excluding tests/ dir from uvicorn --reload watcher (or handle pipeline background task cancellation in shutdown) — reload during a long-running run-all leaves backend unable to shut down cleanly, producing 502s until manual restart."
+  ],
+  "critical_code_review_comments": [
+    "runtime.py:161 — run_all creates a fire-and-forget asyncio.create_task(pipeline()) without tracking; if the process is asked to shut down while pipeline is mid-flight, uvicorn will wait for it. Track it in a set and cancel on shutdown.",
+    "server.py:132 — POST /research requires session in memory (returns 404 if only loaded from Mongo). Same for /verify, /skill. This is a UX gap: reload a session id from cold and only /plan works. Consider loading session on demand like /plan does.",
+    "runtime.py:190-206 — load_session restores knowledge + plan but not confidence_history or reasoning_tree, so a cold-loaded session loses UI state.",
+    "openrouter.py:69 — Fallback cascade retries even on non-retryable errors (e.g., 400 bad request). Should short-circuit on 4xx except 429.",
+    "Landing.jsx model select default is decoupled from backend's DEFAULT_MODEL — creates initial 404 storms until cascade succeeds."
+  ],
+  "updated_files": [
+    "/app/tests/test_lumen_runtime.py (new)",
+    "/app/tests/pytest.ini (new)"
+  ],
+  "success_rate": {"backend": "100% (12/12)", "frontend": "~95% — all critical flows work; 3 minor console warnings + 1 default-model bug"},
+  "test_credentials": "No auth — public per-preview URL. OpenRouter key already configured server-side.",
+  "seed_data_creation": "Created 2 sessions via tests (prefixed TEST_) plus 1 launched via UI ('vision language models for OCR' → sess_bf18c1ea49). Sessions persist in Mongo.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Tests live at /app/tests/ (NOT /app/backend/tests — that dir triggers uvicorn reload during long pipeline tests and causes 502s). Run with: REACT_APP_BACKEND_URL=<preview_url> pytest /app/tests/test_lumen_runtime.py -v. Full pipeline test takes ~75s with OpenRouter free models. The 'openrouter/free' meta-router is reliable; other free models sometimes 404/429 and fall through the cascade. WebSocket handshake sends {type:'Connected'} first then buffered events.",
+  "rca_of_the_issue": "First backend test run failed 100% with 502s. Root cause: pytest test file was placed under /app/backend/tests/, which uvicorn --reload watches. When run-all pipeline test triggered the long-running background asyncio task, any subsequent test file edit caused a reload attempt; uvicorn waited for the background pipeline task to finish (see backend logs: 'Waiting for background tasks to complete') producing a stuck server → Cloudflare 502. Mitigation applied: moved tests to /app/tests/ (outside reload watch); after restart all 12 tests pass in 76s."
+}
