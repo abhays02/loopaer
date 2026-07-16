@@ -1,0 +1,157 @@
+{
+  "project_name": "AERwolf",
+  "domain": "Research Lab Dashboard / Hybrid Fullstack",
+  "theme": "Dark",
+  "archetype": "7 (Electric & Neon)",
+  "aesthetic_summary": "Cyberpunk research-lab with a dark base, neon accents (Electric Blue, Amber, Neon Pink), animated grid backgrounds, glassmorphism panels, and a terminal/mono-serif typography mix. The layout is left-aligned and asymmetric, mimicking an underground data control room.",
+  "typography": {
+    "fonts": {
+      "heading": "Unbounded",
+      "body": "JetBrains Mono",
+      "install_instructions": "Import 'Unbounded' and 'JetBrains Mono' from Google Fonts into the index.css or via next/font if using Next.js. Avoid Inter and Space Grotesk completely."
+    },
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter uppercase",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
+      "h3": "text-xl sm:text-2xl font-semibold tracking-tight",
+      "body": "text-sm sm:text-base font-normal leading-relaxed",
+      "terminal_data": "text-xs font-medium tracking-widest uppercase",
+      "overline": "text-[10px] tracking-[0.2em] uppercase font-bold text-amber-400"
+    }
+  },
+  "colors": {
+    "background": {
+      "base": "#060608",
+      "surface_1": "#0D0D12",
+      "surface_2": "#16161E",
+      "glass": "bg-white/5 backdrop-blur-xl"
+    },
+    "neon": {
+      "primary": "#00E5FF",
+      "primary_glow": "drop-shadow-[0_0_12px_rgba(0,229,255,0.6)]",
+      "secondary": "#FFB000",
+      "secondary_glow": "drop-shadow-[0_0_12px_rgba(255,176,0,0.6)]",
+      "accent": "#FF0055",
+      "accent_glow": "drop-shadow-[0_0_12px_rgba(255,0,85,0.6)]"
+    },
+    "text": {
+      "primary": "#F3F4F6",
+      "secondary": "#9CA3AF",
+      "muted": "#4B5563"
+    },
+    "borders": {
+      "subtle": "border-white/10",
+      "active": "border-[#00E5FF]/50"
+    }
+  },
+  "spacing_and_layout": {
+    "strategy": "The 'Control Room' Grid",
+    "details": "Dense, highly structured, yet asymmetrical. Containers should use ample internal padding (p-6 or p-8) to prevent text collision. Left-align content for readability. Avoid central symmetry.",
+    "canvas_area": "The central node editor takes up the majority of the screen width (col-span-8 or col-span-9 in a 12-col grid), while side panels slide in from the right.",
+    "borders_and_radii": "Sharp edges preferred, max 4px radius (rounded-sm) for subtle smoothing. The 'Tracing Beam' surface strategy applies to active nodes."
+  },
+  "visual_enhancers": {
+    "background_grid": "Animated SVG dot grid or line grid overlay. Opacity 5%. Dots colored #00E5FF. Subtle pulsating animation via CSS.",
+    "textures": "Include a subtle noise/grain overlay (pointer-events-none, fixed, mix-blend-overlay, opacity-20) to break digital flatness.",
+    "glassmorphism": "Use pure 'Optical Clarity' glass: bg-black/40 with backdrop-blur-2xl, border-t border-l border-white/10, and an inner box-shadow for depth.",
+    "scanlines": "Linear repeating gradient (transparent 50%, rgba(0, 0, 0, 0.25) 50%) applied to panels for a CRT/terminal feel."
+  },
+  "components": {
+    "HeroSearchBar": {
+      "description": "A massive, terminal-like command line input dominating the top section.",
+      "styles": "bg-[#0D0D12] border-b-2 border-[#00E5FF] text-2xl font-body text-[#00E5FF] px-8 py-6 focus:outline-none focus:ring-0 focus:shadow-[0_4px_24px_rgba(0,229,255,0.2)] transition-all placeholder:text-[#00E5FF]/30",
+      "testid": "search-topic-input"
+    },
+    "PaperCard": {
+      "description": "Card displaying arXiv/Semantic Scholar papers.",
+      "styles": "bg-white/5 border border-white/10 p-6 rounded-sm hover:border-[#00E5FF]/40 hover:-translate-y-1 transition-all group relative overflow-hidden",
+      "inner_elements": "Include an overline for 'ArXiv', heading for paper title, muted text for abstract snippet. The left border should highlight on hover with #00E5FF.",
+      "testid": "paper-result-card"
+    },
+    "WisdomCard": {
+      "description": "AI-synthesised 'word of wisdom' official reviews.",
+      "styles": "bg-gradient-to-br from-[#16161E] to-[#0D0D12] border border-[#FFB000]/30 p-6 rounded-sm relative",
+      "inner_elements": "Use an Amber glowing icon (lucide-react). Include a 'Tracing Beam' border effect if possible. Text should feel highly legible, with key flaws highlighted in #FF0055.",
+      "testid": "wisdom-review-card"
+    },
+    "AwesomeListCard": {
+      "description": "Curated GitHub repos for the topic.",
+      "styles": "bg-white/5 border border-white/10 p-4 rounded-sm flex items-center gap-4 hover:bg-white/10 transition-colors",
+      "testid": "awesome-list-repo"
+    },
+    "NodeEditorCanvas": {
+      "description": "Central interactive area. Use a library like React Flow if available, highly customized to match the cyberpunk aesthetic.",
+      "background": "Dark space (#060608) with a 20px-spaced dot grid. Dots pulsate slightly.",
+      "edges": "Animated dashed lines or solid glowing lines (#00E5FF) with 'flowing' particles moving from source to target."
+    },
+    "Node": {
+      "description": "A single architecture node within the canvas.",
+      "styles": "bg-[#0D0D12]/90 backdrop-blur-md border border-white/20 p-4 min-w-[200px] shadow-lg flex flex-col gap-2 transition-transform cursor-pointer",
+      "active_state": "When clicked/active: border-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.4)] scale-105",
+      "testid": "architecture-node"
+    },
+    "AlgorithmDrawer": {
+      "description": "Right-side sliding panel (Framer Motion) revealing related algorithms when a node is clicked.",
+      "styles": "fixed right-0 top-0 h-full w-[400px] max-w-full bg-[#060608]/95 backdrop-blur-3xl border-l border-white/10 p-8 shadow-2xl z-50 overflow-y-auto scanline-bg",
+      "testid": "algorithm-drawer-panel"
+    },
+    "AlgorithmSwapItem": {
+      "description": "List item in the drawer showing alternative algorithms (e.g., swapping ResNet for ViT).",
+      "styles": "p-4 border border-white/10 hover:border-[#FFB000] bg-white/5 cursor-pointer flex justify-between items-center group transition-colors",
+      "badges": "Include tiny monospace badges for 'Popularity', 'VRAM', 'Latency'. Badges should have harsh 1px borders and bright text.",
+      "testid": "algorithm-swap-btn"
+    },
+    "SkillExportPreview": {
+      "description": "Live preview of the generated SKILL.md file.",
+      "styles": "bg-[#0D0D12] text-[#F3F4F6] font-body p-8 border border-white/10 overflow-auto text-sm",
+      "markdown_styles": "YAML front-matter tinted in #FFB000, headings in #00E5FF. Strict monospaced typography here.",
+      "testid": "skill-export-preview"
+    },
+    "AuthHeader": {
+      "description": "Top navigation including Google Login and Dashboard links.",
+      "styles": "w-full h-16 border-b border-white/10 bg-[#060608]/80 backdrop-blur-md px-8 flex justify-between items-center z-50 sticky top-0",
+      "button_style": "bg-white/10 text-white px-4 py-2 text-xs font-bold tracking-wider hover:bg-white/20 transition-colors uppercase border border-white/20",
+      "testid": "auth-header-nav"
+    }
+  },
+  "micro_animations": {
+    "hover": "All interactive elements should subtly translate upwards (-translate-y-0.5) and have their border transition to a neon color.",
+    "click": "Scale down slightly (scale-95) for a tactile feel.",
+    "data_flow": "Use SVG stroke-dashoffset animations for the connection lines in the node graph to simulate data moving."
+  },
+  "icons": {
+    "library": "lucide-react",
+    "instructions": "Use with stroke-width 1.5. Tint icons to match the neon accent colors contextually."
+  },
+  "media": {
+    "hero_backgrounds": [
+      {
+        "url": "https://images.unsplash.com/photo-1771873679764-4e5503b69040?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwxfHxkYXJrJTIwYWJzdHJhY3QlMjBuZW9uJTIwZ3JpZCUyMHRleHR1cmV8ZW58MHx8fHwxNzgzMjg3MzUxfDA&ixlib=rb-4.1.0&q=85",
+        "category": "texture_grid",
+        "description": "Abstract grid pattern with warm and cool lighting. Use as a very low opacity (5-10%) background texture for the entire app body or the hero landing."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1771930681085-61e08947ad7d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwzfHxkYXJrJTIwYWJzdHJhY3QlMjBuZW9uJTIwZ3JpZCUyMHRleHR1cmV8ZW58MHx8fHwxNzgzMjg3MzUxfDA&ixlib=rb-4.1.0&q=85",
+        "category": "texture_grid_alt",
+        "description": "Abstract grid pattern with red and blue light. Great for the 'Algorithm Drawer' background texture overlay."
+      }
+    ],
+    "avatars": [
+      {
+        "url": "https://images.unsplash.com/photo-1746109971442-c3d4b75194be?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwyfHxjeWJlcnB1bmslMjByZXNlYXJjaGVyJTIwcG9ydHJhaXQlMjBkYXJrfGVufDB8fHx8MTc4MzI4NzM1MXww&ixlib=rb-4.1.0&q=85",
+        "category": "user_avatar",
+        "description": "Cyberpunk researcher illuminated by x-ray/data. Use for the logged-in user profile avatar in the AuthHeader."
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Install required dependencies: 'npm install framer-motion lucide-react reactflow @radix-ui/react-icons'.",
+    "Configure Tailwind for the new fonts: Unbounded (sans) and JetBrains Mono (mono).",
+    "Ensure all components are strictly written in .js/.jsx, NOT TypeScript.",
+    "Do not use generic UI cards. Adhere strictly to the 'Tracing Beam', 'Scanline', and 'Glassmorphism' surface strategies defined in these guidelines.",
+    "Ensure the Node Graph editor uses 'reactflow' with custom node components built visually matching the 'Node' specifications.",
+    "Every interactive element MUST have the specified 'data-testid' attribute.",
+    "NEVER use placeholder image URLs. Use the provided Unsplash URLs in the media section.",
+    "The SKILL.md preview should be formatted to look like a raw markdown file in an IDE."
+  ]
+}
