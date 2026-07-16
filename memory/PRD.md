@@ -51,6 +51,11 @@ User → Goal → Planner Loop → Runtime Event Bus →
 - Research replay scrubber with density heatmap
 - SKILL.md export (markdown + JSON)
 - User-switchable models (free + paid tiers)
+- **Iteration 2**: Event persistence to Mongo + cold-session rehydration (any /events or WS request rebuilds the in-memory buffer from the persisted `events` collection).
+- **Iteration 2**: Real SSE token streaming from OpenRouter — planner now emits `TokenStreamed` events with live deltas. Falls back to non-streaming, then to a static plan if all free models rate-limit.
+- **Iteration 2**: Memory loop — verified facts + entities archive to a global `memory` collection at end of verification. New sessions receive `MemoryHit` events from token-overlap recall over prior sessions before planning begins.
+- **Iteration 2**: Persisted sessions (only in Mongo) now accept /plan /research /verify /skill /run-all — routes call `runtime.get() or await load_session()`.
+- **Iteration 2 UI upgrade**: Landing gets scramble text, mouse-parallax gradient blobs, animated marquee, big animated counters, shimmer sweep on goal input, rotating dashed circle. Bottom dock gets true dock.cool magnification (icons balloon toward the cursor with spring physics).
 
 ## Backlog / P1
 - Real streaming (SSE) tokens from LLM instead of chunked events

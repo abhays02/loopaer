@@ -18,6 +18,7 @@ export default function Runtime() {
   const autostart = loc.state?.autostart;
 
   const [session, setSession] = useState(null);
+  const [modelOverride, setModelOverride] = useState(null); // client-side selected model
   const [selectedLoop, setSelectedLoop] = useState(null);
   const [tab, setTab] = useState("plan"); // plan | knowledge | timeline | skill | replay
   const [models, setModels] = useState([]);
@@ -29,11 +30,11 @@ export default function Runtime() {
   useEffect(() => {
     let cancelled = false;
     api.listModels().then((r) => !cancelled && setModels(r.models || []));
-    const fetch = () => api.getSession(sid).then((s) => !cancelled && setSession(s)).catch(() => {});
+    const fetch = () => api.getSession(sid).then((s) => !cancelled && setSession((prev) => prev ? { ...s, model: modelOverride || s.model } : s)).catch(() => {});
     fetch();
     const t = setInterval(fetch, 3000);
     return () => { cancelled = true; clearInterval(t); };
-  }, [sid]);
+  }, [sid, modelOverride]);
 
   // autostart pipeline
   useEffect(() => {
@@ -167,7 +168,7 @@ export default function Runtime() {
         anyRunning={anyRunning}
         onRunStage={runStage}
         onBranch={doBranch}
-        onSelectModel={(mid) => { setSession((s) => s ? {...s, model: mid} : s); toast(`model → ${mid.split('/').pop()}`); }}
+        onSelectModel={(mid) => { setModelOverride(mid); setSession((s) => s ? {...s, model: mid} : s); toast(`model → ${mid.split('/').pop()}`); }}
         onPauseAll={() => loops.filter(l => l.state === "running").forEach(l => doPause(l.id))}
         onResumeAll={() => loops.filter(l => l.state === "paused").forEach(l => doResume(l.id))}
       />
