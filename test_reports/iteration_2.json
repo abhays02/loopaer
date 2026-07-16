@@ -1,0 +1,35 @@
+{
+  "summary": "Iteration 2 tests all pass. Backend: 9/9 pytest tests green in 109s covering event persistence to Mongo, cold-session rehydration, streaming planner (TokenStreamed events), memory endpoints (/memory, /memory/recall), MemoryArchive after run-all, MemoryHit on overlapping sessions, and /research /verify /skill /run-all now succeeding on sessions that exist only in Mongo (previously 404). Frontend: Landing page kinetic upgrade verified (scramble text finalized to 'EVENT-DRIVEN · LOOP-DRIVEN · COGNITION-DRIVEN', marquee loops present, animated counters 26/8/12/0, shimmer gradient on goal container, rotating dashed circle beside 'in loops.'). Runtime dock magnification confirmed (icon under cursor grows from 46→78.8px, neighbor at 59.8px). Model switcher label updates immediately and toast fires. Event stream renders 206 TokenStreamed events for a persisted session — proves cold rehydration also drives UI.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "BottomDock model switcher", "issue": "The 2s polling in Runtime.jsx (fetch on interval → setSession) overwrites the optimistic local model update. Result: user picks 'Qwen3 80B' → label flashes to it, toast fires, but within ~2s the label reverts to whatever the backend session record says (still 'openrouter/free' because /sessions/{sid} has no PATCH endpoint). Screenshot confirms revert to 'Auto (Free Router)'. Fix options: (1) add PATCH /api/sessions/{sid} to persist model on server, (2) hold the local model override in a separate state that survives polling, or (3) stop polling once the initial session is loaded and rely purely on WS events.", "selector": "[data-testid=dock-model-switcher]", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/tests/test_iteration_2.py",
+    "/app/test_reports/pytest/iteration_2_results.xml",
+    "/app/tests/test_lumen_runtime.py"
+  ],
+  "action_items": [
+    "Persist model selection server-side (PATCH /api/sessions/{sid}) or otherwise prevent the periodic getSession poll from clobbering the just-selected model. Current UX: label reverts within 2s of selection."
+  ],
+  "critical_code_review_comments": [
+    "runtime.py:243 — MemoryHit events emit BEFORE PlannerThinking; iteration 2 correctly separates recall from streaming path. Streaming fallback (line 279-298) is robust: if SSE fails it falls to chat_json, and if that fails a static fallback plan is used — good defensive layering.",
+    "eventbus.py:79 — rehydrate loads up to _max_buffer (1200) events sorted by seq. Correct. However, hydration only fires when in-memory buffer is empty; if a session had 3 events buffered and Mongo has 500, /events returns only 3. Consider comparing counts, or always call rehydrate when the buffer size < Mongo count.",
+    "memory.py:66 — recall pulls up to 500 memory docs into memory then scores in Python. Fine for MVP but O(n) per call; will not scale past a few thousand items. Add a text index or embeddings later.",
+    "server.py:132-163 — all four action endpoints (/plan /research /verify /skill) now correctly use `runtime.get(sid) or await runtime.load_session(sid)` — fixes iteration 1 gap. Verified via TestPersistedSessionActions.",
+    "Runtime.jsx:32 — polling getSession every ~2s is what causes the model switcher revert. Either stop polling after initial load or make the poll merge-not-overwrite for locally-mutated fields."
+  ],
+  "updated_files": [
+    "/app/tests/test_iteration_2.py (new)"
+  ],
+  "success_rate": { "backend": "100% (9/9 new + iteration 1 tests remain green)", "frontend": "~95% — all critical iteration 2 flows work; 1 medium UX bug (model switcher revert)" },
+  "test_credentials": "No auth. OPENROUTER_API_KEY already in backend/.env.",
+  "seed_data_creation": "3 new TEST_ITER2_ prefixed sessions created via API (persistence, run-all archive, memory hit). MongoDB state after run: 13 sessions, 1245 events, 45 memory items, 8 skills, 971 TokenStreamed events, 5 MemoryHit events, 2 MemoryArchived events.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 2 test file at /app/tests/test_iteration_2.py — runs in ~110s with pymongo directly hitting mongodb://localhost:27017/lumen_runtime. Sessions with rich TokenStreamed history: sess_fc5e4d38d5 (206 tokens), sess_481d034616 (201), sess_568f101e34 (166). Use these for UI verification without waiting for a fresh pipeline. Landing kinetic elements settle in ~2s after mount — always wait_for_timeout(2500) before measuring scramble text. Dock magnification requires page.mouse.move over icon center + wait_for_timeout(800) for the useSpring to settle before measuring widths."
+}

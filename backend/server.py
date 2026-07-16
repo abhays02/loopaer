@@ -34,6 +34,7 @@ import json
 from openrouter import list_models, DEFAULT_MODEL
 from runtime import Runtime
 from eventbus import bus
+import memory as mem
 
 ROOT = Path(__file__).parent
 load_dotenv(ROOT / ".env")
@@ -45,6 +46,7 @@ mongo = AsyncIOMotorClient(MONGO_URL)
 db = mongo[DB_NAME]
 
 runtime = Runtime(db)
+bus.attach_db(db)
 
 app = FastAPI(title="Lumen Runtime")
 api = APIRouter(prefix="/api")
@@ -111,6 +113,9 @@ async def get_session(sid: str):
 
 @api.get("/sessions/{sid}/events")
 async def session_events(sid: str):
+    # rehydrate from mongo if buffer is empty (cold session reload)
+    if not bus.history(sid):
+        await bus.rehydrate(sid)
     return {"events": bus.history(sid)}
 
 
@@ -133,16 +138,16 @@ async def run_plan(sid: str):
 
 @api.post("/sessions/{sid}/research")
 async def run_research(sid: str):
-    s = runtime.get(sid)
+    s = runtime.get(sid) or await runtime.load_session(sid)
     if not s:
-        raise HTTPException(404, "session not found (must exist in memory)")
+        raise HTTPException(404, "session not found")
     loop = await runtime.run_research(s)
     return {"loop_id": loop.id, "state": loop.state}
 
 
 @api.post("/sessions/{sid}/verify")
 async def run_verify(sid: str):
-    s = runtime.get(sid)
+    s = runtime.get(sid) or await runtime.load_session(sid)
     if not s:
         raise HTTPException(404, "session not found")
     loop = await runtime.run_verification(s)
@@ -151,7 +156,7 @@ async def run_verify(sid: str):
 
 @api.post("/sessions/{sid}/skill")
 async def run_skill(sid: str):
-    s = runtime.get(sid)
+    s = runtime.get(sid) or await runtime.load_session(sid)
     if not s:
         raise HTTPException(404, "session not found")
     loop = await runtime.run_skill_builder(s)
@@ -161,7 +166,7 @@ async def run_skill(sid: str):
 @api.post("/sessions/{sid}/run-all")
 async def run_all(sid: str):
     """Run the full pipeline sequentially (planner → research → verify → skill)."""
-    s = runtime.get(sid)
+    s = runtime.get(sid) or await runtime.load_session(sid)
     if not s:
         raise HTTPException(404, "session not found")
 
@@ -232,14 +237,28 @@ async def get_skill(skill_id: str):
     return doc
 
 
+@api.get("/memory")
+async def get_memory(limit: int = 200):
+    docs = await mem.list_all(db, limit=limit)
+    return {"memory": docs, "count": len(docs)}
+
+
+@api.get("/memory/recall")
+async def memory_recall(q: str, top_k: int = 8):
+    hits = await mem.recall(db, q, top_k=top_k)
+    return {"query": q, "hits": hits}
+
+
 # ------- WebSocket event stream -------
 
 @app.websocket("/api/ws/{sid}")
 async def ws_events(ws: WebSocket, sid: str):
     await ws.accept()
+    # rehydrate persisted events for late/reconnecting clients
+    if not bus.history(sid):
+        await bus.rehydrate(sid)
     q = bus.subscribe(sid)
     try:
-        # First send handshake + history
         await ws.send_text(json.dumps({"type": "Connected", "session_id": sid}))
         while True:
             ev = await q.get()

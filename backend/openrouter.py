@@ -2,7 +2,7 @@
 import os
 import json
 import httpx
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, AsyncIterator
 
 
 # Curated free/paid models (Jan 2026). `openrouter/free` is a meta-router
@@ -101,6 +101,52 @@ class OpenRouterClient:
                     except Exception:
                         pass
             raise RuntimeError(f"Model returned non-JSON: {text[:200]}")
+
+    async def stream(
+        self,
+        messages: List[Dict[str, str]],
+        model: str = DEFAULT_MODEL,
+        temperature: float = 0.4,
+        max_tokens: int = 1200,
+    ) -> AsyncIterator[str]:
+        """Yield delta text tokens as they arrive from OpenRouter (SSE)."""
+        if not self.api_key:
+            raise RuntimeError("OPENROUTER_API_KEY not configured")
+        payload = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream",
+            "HTTP-Referer": "https://lumen-runtime.app",
+            "X-Title": "Lumen Runtime",
+        }
+        async with httpx.AsyncClient(timeout=120.0) as http:
+            async with http.stream("POST", f"{self.base_url}/chat/completions", headers=headers, json=payload) as r:
+                if r.status_code != 200:
+                    body = await r.aread()
+                    raise RuntimeError(f"OpenRouter stream {r.status_code}: {body[:220].decode(errors='ignore')}")
+                async for line in r.aiter_lines():
+                    if not line:
+                        continue
+                    if line.startswith(":"):
+                        continue  # keep-alive comment
+                    if line.startswith("data: "):
+                        chunk = line[6:].strip()
+                        if chunk == "[DONE]":
+                            return
+                        try:
+                            obj = json.loads(chunk)
+                            delta = obj.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                            if delta:
+                                yield delta
+                        except Exception:
+                            continue
 
 
 def list_models() -> List[Dict[str, str]]:

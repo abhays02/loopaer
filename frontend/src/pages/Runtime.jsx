@@ -167,6 +167,7 @@ export default function Runtime() {
         anyRunning={anyRunning}
         onRunStage={runStage}
         onBranch={doBranch}
+        onSelectModel={(mid) => { setSession((s) => s ? {...s, model: mid} : s); toast(`model → ${mid.split('/').pop()}`); }}
         onPauseAll={() => loops.filter(l => l.state === "running").forEach(l => doPause(l.id))}
         onResumeAll={() => loops.filter(l => l.state === "paused").forEach(l => doResume(l.id))}
       />

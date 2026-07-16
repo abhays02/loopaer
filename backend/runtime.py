@@ -14,6 +14,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from openrouter import OpenRouterClient, DEFAULT_MODEL
 from sources import fetch_arxiv, fetch_github
 from eventbus import bus
+import memory as mem
 
 
 def now_iso() -> str:
@@ -234,38 +235,76 @@ class Runtime:
 
         async def go():
             await loop._checkpoint()
-            await bus.emit(session.id, "PlannerThinking", {"loop_id": loop.id, "step": "understanding"})
-            msg = [
-                {"role": "system", "content": PLANNER_SYS},
-                {"role": "user", "content": f"USER GOAL:\n{session.goal}"},
-            ]
+
+            # Memory recall — check if prior sessions covered this topic.
             try:
-                plan = await self.client.chat_json(msg, model=session.model)
+                hits = await mem.recall(self.db, session.goal, exclude_session=session.id, top_k=5)
+                for h in hits:
+                    await bus.emit(session.id, "MemoryHit", {"score": h.get("score"), "text": h.get("text","")[:180], "kind": h.get("kind"), "goal": h.get("goal","")[:80]})
+            except Exception:
+                hits = []
+
+            await bus.emit(session.id, "PlannerThinking", {"loop_id": loop.id, "step": "understanding"})
+
+            # STREAMING PLANNER — stream tokens to the event bus so UI shows live thinking.
+            mem_context = ""
+            if hits:
+                mem_context = "\n\nRELEVANT PRIOR KNOWLEDGE (from memory):\n" + "\n".join(f"- {h['text'][:160]}" for h in hits[:5])
+
+            msgs = [
+                {"role": "system", "content": PLANNER_SYS},
+                {"role": "user", "content": f"USER GOAL:\n{session.goal}{mem_context}"},
+            ]
+
+            buf = []
+            try:
+                async for tok in self.client.stream(msgs, model=session.model, temperature=0.3, max_tokens=1200):
+                    buf.append(tok)
+                    # emit every ~30 chars to keep bus lively without flooding
+                    if sum(len(x) for x in buf[-6:]) > 24:
+                        await bus.emit(session.id, "TokenStreamed", {"loop_id": loop.id, "delta": "".join(buf[-6:])})
+                text = "".join(buf)
+                # parse JSON
+                clean = text.strip()
+                if clean.startswith("```"):
+                    lines = clean.split("\n")
+                    if lines[0].startswith("```"): lines = lines[1:]
+                    if lines and lines[-1].startswith("```"): lines = lines[:-1]
+                    clean = "\n".join(lines).strip()
+                try:
+                    plan = json.loads(clean)
+                except Exception:
+                    i, j = clean.find("{"), clean.rfind("}")
+                    plan = json.loads(clean[i:j+1]) if i != -1 and j != -1 else {}
             except Exception as e:
-                # fallback plan when LLM fails
-                plan = {
-                    "understanding": session.goal,
-                    "questions": [f"What is {session.goal}?", "What are the leading approaches?", "What is missing in current work?"],
-                    "tasks": [
-                        {"id": "t1", "title": "Search recent arXiv papers", "kind": "search", "depends_on": []},
-                        {"id": "t2", "title": "Search GitHub for reference implementations", "kind": "search", "depends_on": []},
-                        {"id": "t3", "title": "Extract facts & entities", "kind": "extract", "depends_on": ["t1", "t2"]},
-                        {"id": "t4", "title": "Verify & compute confidence", "kind": "verify", "depends_on": ["t3"]},
-                        {"id": "t5", "title": "Compile skill package", "kind": "synthesize", "depends_on": ["t4"]},
-                    ],
-                    "cost_estimate": "medium",
-                    "time_estimate": "45",
-                    "confidence": 70,
-                    "_fallback_error": str(e)[:180],
-                }
+                # non-streaming fallback
+                try:
+                    plan = await self.client.chat_json(msgs, model=session.model)
+                except Exception as e2:
+                    plan = {
+                        "understanding": session.goal,
+                        "questions": [f"What is {session.goal}?", "What are the leading approaches?", "What is missing in current work?"],
+                        "tasks": [
+                            {"id": "t1", "title": "Search recent arXiv papers", "kind": "search", "depends_on": []},
+                            {"id": "t2", "title": "Search GitHub for reference implementations", "kind": "search", "depends_on": []},
+                            {"id": "t3", "title": "Extract facts & entities", "kind": "extract", "depends_on": ["t1", "t2"]},
+                            {"id": "t4", "title": "Verify & compute confidence", "kind": "verify", "depends_on": ["t3"]},
+                            {"id": "t5", "title": "Compile skill package", "kind": "synthesize", "depends_on": ["t4"]},
+                        ],
+                        "cost_estimate": "medium",
+                        "time_estimate": "45",
+                        "confidence": 70,
+                        "_fallback_error": str(e2)[:180],
+                    }
+
             session.plan = plan
             loop.result = plan
             loop.iterations = 1
             await self.db.sessions.update_one({"id": session.id}, {"$set": {"plan": plan}})
             await bus.emit(session.id, "PlanReady", {"loop_id": loop.id, "plan": plan})
             session.reasoning_tree["children"] = [
-                {"id": t["id"], "label": t["title"], "kind": t.get("kind"), "confidence": None, "children": []}
-                for t in plan.get("tasks", [])
+                {"id": t.get("id", f"t{i}"), "label": t.get("title",""), "kind": t.get("kind"), "confidence": None, "children": []}
+                for i, t in enumerate(plan.get("tasks", []))
             ]
             await bus.emit(session.id, "ReasoningTreeUpdated", {"tree": session.reasoning_tree})
         return self._launch(loop, go())
@@ -393,6 +432,13 @@ class Runtime:
                 {"$set": {"knowledge": session.knowledge}},
                 upsert=True,
             )
+            # Archive verified knowledge to global memory
+            try:
+                n_arch = await mem.archive_session(self.db, session.id, session.goal, facts, session.knowledge.get("entities", []))
+                if n_arch:
+                    await bus.emit(session.id, "MemoryArchived", {"count": n_arch})
+            except Exception as e:
+                await bus.emit(session.id, "LoopWarning", {"loop_id": loop.id, "warn": f"archive failed: {str(e)[:120]}"})
         return self._launch(loop, go())
 
     # -- skill builder --

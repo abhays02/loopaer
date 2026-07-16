@@ -12,6 +12,7 @@ const TYPE_COLORS = {
   LoopWarning: "text-[var(--amber)]",
   PlannerThinking: "text-[var(--cyan)]",
   PlanReady: "text-[var(--acid)]",
+  TokenStreamed: "text-white/40",
   ResearchStarted: "text-[var(--cyan)]",
   ResearchFinished: "text-[var(--acid)]",
   SourceFetching: "text-white/50",
@@ -28,6 +29,8 @@ const TYPE_COLORS = {
   InjectionApplied: "text-[var(--hot)]",
   ReasoningTreeUpdated: "text-white/40",
   SessionBranched: "text-[var(--cyan)]",
+  MemoryHit: "text-[var(--cyan)]",
+  MemoryArchived: "text-[var(--acid)]",
   Connected: "text-white/40",
 };
 
@@ -59,6 +62,9 @@ function summarize(ev) {
     case "InjectionApplied": return `applied: ${p.instruction?.slice(0, 60)}`;
     case "ReasoningTreeUpdated": return `tree updated`;
     case "SessionBranched": return `branched from ${p.parent?.slice(-6)}`;
+    case "TokenStreamed": return `↳ ${p.delta?.replace(/\n/g," ").slice(0, 80)}`;
+    case "MemoryHit": return `↺ ${Math.round((p.score||0)*100)}% · ${p.text?.slice(0, 70)}`;
+    case "MemoryArchived": return `archived ${p.count} items to memory`;
     default: return "";
   }
 }
