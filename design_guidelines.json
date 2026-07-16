@@ -1,0 +1,154 @@
+{
+  "theme": "dark",
+  "archetype": "ELECTRIC & NEON / THE PERFORMANCE PRO HYBRID",
+  "typography": {
+    "headings": {
+      "font_family": "Cabinet Grotesk, General Sans, sans-serif",
+      "weights": ["light", "black", "extrabold"],
+      "tracking": "tracking-tight or tracking-tighter",
+      "line_height": "leading-none",
+      "usage": "Bold animated typography, big kinetic hero moments, loop statuses, main panel titles. Do not use Inter or Space Grotesk."
+    },
+    "body": {
+      "font_family": "JetBrains Mono, Berkeley Mono, monospace",
+      "weights": ["regular", "medium"],
+      "tracking": "tracking-normal",
+      "line_height": "leading-relaxed",
+      "usage": "Event stream rail, code snippets, tool inputs, metadata, and data-heavy tables. Monospace gives it an OS/workbench feel."
+    },
+    "labels": {
+      "styling": "uppercase, text-xs, tracking-[0.2em], font-medium text-neutral-500",
+      "usage": "Overlines, tags, status pills, memory nodes, panel headers."
+    }
+  },
+  "colors": {
+    "base": {
+      "background": "#050505",
+      "panel_bg": "#0A0A0A",
+      "border": "rgba(255, 255, 255, 0.08)",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "rgba(255, 255, 255, 0.6)"
+    },
+    "accent": {
+      "primary": "#D4FF00",
+      "primary_glow": "rgba(212, 255, 0, 0.3)",
+      "secondary": "#00E5FF",
+      "description": "Electric Acid Green. Signals 'alive and thinking'. Highly kinetic and cognitive. Contrast heavily against dark void base. Avoid purple/violet AI-slop."
+    },
+    "states": {
+      "success": "#D4FF00",
+      "error": "#FF3B30",
+      "warning": "#FF9F0A",
+      "info": "#00E5FF",
+      "hover": "rgba(255, 255, 255, 0.12)"
+    }
+  },
+  "visual_enhancers": {
+    "liquid_glass": {
+      "background": "rgba(10, 10, 10, 0.4)",
+      "backdrop_filter": "blur(16px) saturate(180%)",
+      "border": "1px solid rgba(255, 255, 255, 0.1)",
+      "box_shadow": "inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.4)",
+      "usage": "Used for floating controls, bottom dock, model switcher, and overlay panels (Dock.cool style)."
+    },
+    "textures": {
+      "noise": "Subtle grain texture overlaid on panels via background-image to remove flat digital sterility. Adds 'nominal' tactile feel."
+    },
+    "borders": {
+      "radius": {
+        "outer": "rounded-2xl",
+        "inner": "rounded-lg",
+        "pill": "rounded-full"
+      },
+      "style": "Sharp 1px semi-transparent borders (border-white/10). No soft muddy shadows."
+    },
+    "cursor": {
+      "style": "Custom animated geometric cursor (using framer-motion) that reacts to hover states (e.g., expands on interactive elements)."
+    }
+  },
+  "layouts": {
+    "overall_structure": "Hybrid Fullstack Workbench / OS Dashboard. 100vh, hidden main scrollbar. Heavy reliance on independent panel scrolling.",
+    "regions": {
+      "left_rail": "Loop tree and navigation (Knowledge Graph shortcuts, Planner tree). Width: ~280px.",
+      "right_rail": "Live Event Bus stream. width: ~320px. Monospaced cascading feed of events.",
+      "center_canvas": "Dynamic Artifact Renderer. Wide workspace for algorithms, architecture viewer, comparison matrices.",
+      "bottom_dock": "Floating liquid-glass dock centered at bottom. Contains Model Switcher, play/pause/branch, intervention input. Z-index 50."
+    },
+    "spacing": "Extreme confidence in whitespace. Generous padding in center canvas (p-12 to p-24). Tight data density in side panels (p-4, gap-2)."
+  },
+  "grids": {
+    "bento": "High density grid for Memory Browser and Skill Generator (grid-cols-2 md:grid-cols-4, gap-4). Fill items h-full.",
+    "timeline": "Linear tracking row for Research Timeline scrubber, horizontal overflow hidden, custom scrollbar."
+  },
+  "components": {
+    "buttons": "Pill-shaped (rounded-full) or sharp structural (rounded-none). Accent buttons must glow on hover.",
+    "panels": "Dark solid base (bg-[#0A0A0A]) with 1px border-white/10. No glassmorphism here, to preserve data legibility. Glass is only for floating docks.",
+    "event_stream": "Cascading feed. Use Framer Motion (layout, initial, animate) for items sliding in with spring physics.",
+    "confidence_meter": "Animated SVG ring/bar with glow drop-shadow matching confidence level. Color shifts from warning (orange) to success (acid green).",
+    "model_switcher": "Liquid animation toggle pill in the dock. Spring physics to snap between Llama/Claude/GPT.",
+    "shadcn_overrides": "Use Shadcn purely for behavior (Dropdown, Tooltips, Dialogs) but strip generic styling. Apply liquid glass to Tooltip/Dropdown content wrappers."
+  },
+  "motion": {
+    "physics": "Spring physics for drags/hovers (stiffness: 300, damping: 25). Avoid linear easing.",
+    "reveals": "Staggered panel reveals on mount.",
+    "data_viz": "Connections drawing between graph nodes (stroke-dasharray animation). Loop status pulsing.",
+    "hover_states": "Tactile depth. Glossy highlights passing over the liquid-glass dock items on hover."
+  },
+  "3d_and_data_libraries": {
+    "graph_viz": "React Flow or Visx for Knowledge Graph and Reasoning Tree (interactive nodes, custom edges).",
+    "motion": "Framer Motion for layout transitions, Event Bus item sliding, and custom cursor.",
+    "scrollytelling": "Not applicable; this is a fixed 100vh workbench. Use D3/Visx for Artifact Canvas rendering."
+  },
+  "image_urls": {
+    "dark_liquid_abstract": [
+      {
+        "url": "https://images.unsplash.com/photo-1584968124544-d10ce10dd21f",
+        "description": "Dark blue/black liquid abstract for possible hero/login overlay."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1604871000636-074fa5117945",
+        "description": "Abstract fluid paint, usable for dynamic artifact backgrounds if darkened via overlay."
+      }
+    ],
+    "textures": [
+      {
+        "url": "https://images.pexels.com/photos/18599094/pexels-photo-18599094.jpeg",
+        "description": "Grainy black and white abstract texture. Use as a fixed background layer with opacity 0.03 to create tactile 'nominal' noise."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1578662996442-48f60103fc96",
+        "description": "Black and white photo of a dark background for subtle depth."
+      }
+    ]
+  },
+  "accessibility": {
+    "contrast": "Maintain APCA minimums. Use text-white for primary, text-white/60 for secondary. Acid green on dark bg ensures extreme contrast.",
+    "motion": "Respect prefers-reduced-motion media query by snapping state transitions instead of springing.",
+    "test_ids": "Include data-testid kebab-case attributes on all dock controls, event bus items, and loop inspector actions."
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid the 'AI slop' aesthetic. Create creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy (Base -> Panels -> Liquid Glass Dock).",
+    "Use glass-morphism effects with backdrop filters (12-24px blur, rgba) ONLY for floating or overlay UI elements (dock, tooltips, dialogs). Data panels must be solid for legibility.",
+    "You MUST NOT apply universal transition. Eg: `transition: all`. Always add transitions for specific interactive elements.",
+    "You MUST NOT center align the app container. This disrupts the human natural reading flow of text.",
+    "Always use modern button styles like pill-shaped, or sharp buttons with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 etc for icons. Use Phosphor Icons or Lucide.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable in layout canvases. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations separate good from extraordinary.",
+    "Main agent MUST rely on the provided image URLs. NEVER use placeholder text for images.",
+    "Prioritize using pre-existing components from src/components/ui when applicable, but override their generic SaaS feel with extreme dark mode + acid green styling.",
+    "Use `sonner` for toasts. It is located in `/app/src/components/ui/sonner.tsx`."
+  ],
+  "instructions_to_main_agent": [
+    "Construct a 100vh app with a 3-column structural grid (Left Rail, Center Canvas, Right Rail) and a fixed Bottom Dock.",
+    "Ensure `data-testid` is added to all interactive elements, e.g. `data-testid='dock-model-switcher'`.",
+    "Leverage Framer Motion heavily for the Event Bus stream (animate items entering).",
+    "Use JetBrains Mono or similar for the Event stream and Code blocks. Use Cabinet Grotesk for the massive panel titles.",
+    "DO NOT use a transparent background in the header, overlays, or any surface that has content under it. Use Liquid Glass (blur + rgba) or solid colors.",
+    "Inject the noise texture URL via CSS background-image across the app background."
+  ]
+}
