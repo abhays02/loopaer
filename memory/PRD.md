@@ -56,6 +56,10 @@ User → Goal → Planner Loop → Runtime Event Bus →
 - **Iteration 2**: Memory loop — verified facts + entities archive to a global `memory` collection at end of verification. New sessions receive `MemoryHit` events from token-overlap recall over prior sessions before planning begins.
 - **Iteration 2**: Persisted sessions (only in Mongo) now accept /plan /research /verify /skill /run-all — routes call `runtime.get() or await load_session()`.
 - **Iteration 2 UI upgrade**: Landing gets scramble text, mouse-parallax gradient blobs, animated marquee, big animated counters, shimmer sweep on goal input, rotating dashed circle. Bottom dock gets true dock.cool magnification (icons balloon toward the cursor with spring physics).
+- **Iteration 3**: MongoDB text index (`memory_fulltext` on `text` + `goal` fields) — recall now runs `$text` search with textScore ranking (O(log n) at scale) and normalizes scores to [0,1]. Token-overlap fallback kept for edge queries.
+- **Iteration 3**: Extraction & verification loops now stream tokens too (previously only planner). Shared `_stream_json` helper on the Runtime class.
+- **Iteration 3**: Animated Reasoning Tree tab in the artifact canvas — iterative walkFlat renderer (no recursion → no stack overflow risk at any depth), color-coded row types (SEARCH/EXTRACT/VERIFY/SYNTH/ITER/FACT/ENT/GAP), confidence pills, expandable chevrons with layout-animated collapse/expand, structure sidebar with leaf/depth stats and legend.
+- **Iteration 3**: Rehydrate now compares in-memory buffer length vs `db.events.count_documents({session_id})` and tops up when Mongo has more (previously only rehydrated when buffer was strictly empty).
 
 ## Backlog / P1
 - Real streaming (SSE) tokens from LLM instead of chunked events

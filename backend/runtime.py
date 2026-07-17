@@ -146,7 +146,7 @@ class Session:
         self.loops: Dict[str, Loop] = {}
         self.plan: Optional[Dict[str, Any]] = None
         self.knowledge: Dict[str, Any] = {"facts": [], "entities": [], "sources": []}
-        self.reasoning_tree: Dict[str, Any] = {"id": "root", "label": goal, "children": []}
+        self.reasoning_tree: Dict[str, Any] = {"id": "root", "label": goal, "kind": "root", "children": []}
         self.confidence_history: List[Dict[str, Any]] = []
         self.created_at = now_iso()
 
