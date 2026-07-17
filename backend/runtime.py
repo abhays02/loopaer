@@ -175,6 +175,41 @@ class Runtime:
         self.sessions: Dict[str, Session] = {}
         self.client = OpenRouterClient()
 
+    async def _stream_json(self, session: Session, loop: Loop, messages: List[Dict[str, str]]) -> Any:
+        """Stream tokens for a JSON-producing prompt, emitting TokenStreamed events.
+
+        Returns the parsed JSON (dict/list) or raises."""
+        buf: List[str] = []
+        try:
+            async for tok in self.client.stream(messages, model=session.model, temperature=0.35, max_tokens=1300):
+                buf.append(tok)
+                if sum(len(x) for x in buf[-6:]) > 24:
+                    await bus.emit(session.id, "TokenStreamed", {"loop_id": loop.id, "delta": "".join(buf[-6:])})
+        except Exception as e:
+            # Streaming failed — fall back to non-streaming chat_json
+            return await self.client.chat_json(messages, model=session.model)
+
+        text = "".join(buf).strip()
+        if text.startswith("```"):
+            lines = text.split("\n")
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            text = "\n".join(lines).strip()
+        try:
+            return json.loads(text)
+        except Exception:
+            for opener, closer in [("{", "}"), ("[", "]")]:
+                i, j = text.find(opener), text.rfind(closer)
+                if i != -1 and j != -1 and j > i:
+                    try:
+                        return json.loads(text[i:j + 1])
+                    except Exception:
+                        continue
+            # last-ditch: non-streaming retry
+            return await self.client.chat_json(messages, model=session.model)
+
     # -- lifecycle --
 
     async def create_session(self, goal: str, model: str = DEFAULT_MODEL) -> Session:
@@ -256,46 +291,26 @@ class Runtime:
                 {"role": "user", "content": f"USER GOAL:\n{session.goal}{mem_context}"},
             ]
 
-            buf = []
             try:
-                async for tok in self.client.stream(msgs, model=session.model, temperature=0.3, max_tokens=1200):
-                    buf.append(tok)
-                    # emit every ~30 chars to keep bus lively without flooding
-                    if sum(len(x) for x in buf[-6:]) > 24:
-                        await bus.emit(session.id, "TokenStreamed", {"loop_id": loop.id, "delta": "".join(buf[-6:])})
-                text = "".join(buf)
-                # parse JSON
-                clean = text.strip()
-                if clean.startswith("```"):
-                    lines = clean.split("\n")
-                    if lines[0].startswith("```"): lines = lines[1:]
-                    if lines and lines[-1].startswith("```"): lines = lines[:-1]
-                    clean = "\n".join(lines).strip()
-                try:
-                    plan = json.loads(clean)
-                except Exception:
-                    i, j = clean.find("{"), clean.rfind("}")
-                    plan = json.loads(clean[i:j+1]) if i != -1 and j != -1 else {}
+                plan = await self._stream_json(session, loop, msgs)
+                if not isinstance(plan, dict) or "tasks" not in plan:
+                    raise RuntimeError("planner returned malformed JSON")
             except Exception as e:
-                # non-streaming fallback
-                try:
-                    plan = await self.client.chat_json(msgs, model=session.model)
-                except Exception as e2:
-                    plan = {
-                        "understanding": session.goal,
-                        "questions": [f"What is {session.goal}?", "What are the leading approaches?", "What is missing in current work?"],
-                        "tasks": [
-                            {"id": "t1", "title": "Search recent arXiv papers", "kind": "search", "depends_on": []},
-                            {"id": "t2", "title": "Search GitHub for reference implementations", "kind": "search", "depends_on": []},
-                            {"id": "t3", "title": "Extract facts & entities", "kind": "extract", "depends_on": ["t1", "t2"]},
-                            {"id": "t4", "title": "Verify & compute confidence", "kind": "verify", "depends_on": ["t3"]},
-                            {"id": "t5", "title": "Compile skill package", "kind": "synthesize", "depends_on": ["t4"]},
-                        ],
-                        "cost_estimate": "medium",
-                        "time_estimate": "45",
-                        "confidence": 70,
-                        "_fallback_error": str(e2)[:180],
-                    }
+                plan = {
+                    "understanding": session.goal,
+                    "questions": [f"What is {session.goal}?", "What are the leading approaches?", "What is missing in current work?"],
+                    "tasks": [
+                        {"id": "t1", "title": "Search recent arXiv papers", "kind": "search", "depends_on": []},
+                        {"id": "t2", "title": "Search GitHub for reference implementations", "kind": "search", "depends_on": []},
+                        {"id": "t3", "title": "Extract facts & entities", "kind": "extract", "depends_on": ["t1", "t2"]},
+                        {"id": "t4", "title": "Verify & compute confidence", "kind": "verify", "depends_on": ["t3"]},
+                        {"id": "t5", "title": "Compile skill package", "kind": "synthesize", "depends_on": ["t4"]},
+                    ],
+                    "cost_estimate": "medium",
+                    "time_estimate": "45",
+                    "confidence": 70,
+                    "_fallback_error": str(e)[:180],
+                }
 
             session.plan = plan
             loop.result = plan
@@ -343,7 +358,7 @@ class Runtime:
                     session.knowledge["sources"].append(r)
                     await bus.emit(session.id, "RepositoryFound", {"name": r["title"], "url": r["url"], "stars": r.get("stars", 0)})
 
-                # summarize & extract
+                # summarize & extract (STREAMED)
                 if papers or repos:
                     snippets = []
                     for i, s in enumerate(session.knowledge["sources"][-10:]):
@@ -351,26 +366,61 @@ class Runtime:
                         snippets.append(f"[{i}] {s.get('title')} — {text[:220]}")
                     joined = "\n".join(snippets)
                     try:
-                        extracted = await self.client.chat_json(
+                        extracted = await self._stream_json(
+                            session, loop,
                             [
                                 {"role": "system", "content": EXTRACT_SYS},
                                 {"role": "user", "content": f"TOPIC: {session.goal}\nSOURCES:\n{joined}"},
                             ],
-                            model=session.model,
                         )
                         new_facts = extracted.get("facts", []) if isinstance(extracted, dict) else []
                         new_entities = extracted.get("entities", []) if isinstance(extracted, dict) else []
                         gaps = extracted.get("gaps", []) if isinstance(extracted, dict) else []
+                        # attach extracted items into the reasoning tree under a fresh iter node
+                        iter_node = {
+                            "id": f"research-iter-{iteration}",
+                            "label": f"iter {iteration} · {q[:40]}",
+                            "kind": "iteration",
+                            "children": [],
+                        }
                         for f in new_facts:
                             session.knowledge["facts"].append(f)
+                            iter_node["children"].append({
+                                "id": f"fact-{len(session.knowledge['facts'])}",
+                                "label": (f.get("text") or "")[:70],
+                                "kind": "fact",
+                                "confidence": f.get("confidence"),
+                            })
                             await bus.emit(session.id, "FactExtracted", {"fact": f})
                         for ent in new_entities:
                             session.knowledge["entities"].append(ent)
+                            iter_node["children"].append({
+                                "id": f"ent-{len(session.knowledge['entities'])}",
+                                "label": ent.get("label", ""),
+                                "kind": "entity",
+                                "entity_type": ent.get("type"),
+                            })
                             await bus.emit(session.id, "EntityDetected", {"entity": ent})
                         for g in gaps:
+                            iter_node["children"].append({
+                                "id": f"gap-{len(iter_node['children'])}",
+                                "label": g[:80],
+                                "kind": "gap",
+                            })
                             await bus.emit(session.id, "GapDetected", {"gap": g})
                             if g and len(queries) < 2:
                                 queries.append(g[:80])
+                        # attach iteration node to research subtree
+                        research_root = None
+                        for c in session.reasoning_tree.get("children", []):
+                            if c.get("kind") == "search" or c.get("id") == "research":
+                                research_root = c
+                                break
+                        if research_root is None:
+                            research_root = {"id": "research", "label": "research", "kind": "search", "children": []}
+                            session.reasoning_tree.setdefault("children", []).append(research_root)
+                        research_root.setdefault("children", []).append(iter_node)
+                        await bus.emit(session.id, "ReasoningTreeUpdated", {"tree": session.reasoning_tree})
                     except Exception as e:
                         await bus.emit(session.id, "LoopWarning", {"loop_id": loop.id, "warn": f"extract failed: {str(e)[:120]}"})
 
@@ -402,6 +452,8 @@ class Runtime:
             facts = session.knowledge.get("facts", [])[:10]
             avg = 0.0
             n = 0
+            verify_node = {"id": "verify", "label": "verification", "kind": "verify", "children": []}
+            session.reasoning_tree.setdefault("children", []).append(verify_node)
             for i, f in enumerate(facts):
                 await loop._checkpoint()
                 loop.iterations = i + 1
@@ -409,20 +461,29 @@ class Runtime:
                 supporting = [s for s in session.knowledge["sources"] if isinstance(s, dict)]
                 snippets = [f"[{j}] {s.get('title','')}: {(s.get('abstract') or s.get('description') or '')[:200]}" for j, s in enumerate(supporting[:6])]
                 try:
-                    result = await self.client.chat_json(
+                    result = await self._stream_json(
+                        session, loop,
                         [
                             {"role": "system", "content": VERIFIER_SYS},
                             {"role": "user", "content": f"CLAIM: {f.get('text','')}\nSOURCES:\n{chr(10).join(snippets)}"},
                         ],
-                        model=session.model,
                     )
                     conf = int(result.get("confidence", 40))
+                    verdict = result.get("verdict", "unclear")
                     f["verified_confidence"] = conf
-                    f["verdict"] = result.get("verdict", "unclear")
+                    f["verdict"] = verdict
                     avg = (avg * n + conf) / (n + 1)
                     n += 1
                     session.confidence_history.append({"fact": f.get("text", "")[:100], "confidence": conf, "ts": now_iso()})
-                    await bus.emit(session.id, "ConfidenceChanged", {"fact": f.get("text","")[:120], "confidence": conf, "verdict": f["verdict"]})
+                    verify_node["children"].append({
+                        "id": f"vf-{i}",
+                        "label": f.get("text", "")[:80],
+                        "kind": "fact",
+                        "confidence": conf,
+                        "verdict": verdict,
+                    })
+                    await bus.emit(session.id, "ConfidenceChanged", {"fact": f.get("text","")[:120], "confidence": conf, "verdict": verdict})
+                    await bus.emit(session.id, "ReasoningTreeUpdated", {"tree": session.reasoning_tree})
                 except Exception as e:
                     await bus.emit(session.id, "LoopWarning", {"loop_id": loop.id, "warn": f"verify failed: {str(e)[:120]}"})
             loop.result = {"average_confidence": round(avg, 1), "verified": n}

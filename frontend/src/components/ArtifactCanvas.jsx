@@ -5,17 +5,19 @@ import ConfidenceMeter from "./ConfidenceMeter";
 import SkillPanel from "./SkillPanel";
 import PlanReveal from "./PlanReveal";
 import ReplayScrubber from "./ReplayScrubber";
-import { Layers, Brain, ShieldCheck, Sparkles, Rewind } from "lucide-react";
+import ReasoningTree from "./ReasoningTree";
+import { Layers, Brain, ShieldCheck, Sparkles, Rewind, Network } from "lucide-react";
 
 const TABS = [
   { id: "plan", label: "Plan", icon: Brain },
+  { id: "tree", label: "Reasoning", icon: Network },
   { id: "knowledge", label: "Knowledge", icon: Layers },
   { id: "confidence", label: "Confidence", icon: ShieldCheck },
   { id: "skill", label: "Skill", icon: Sparkles },
   { id: "replay", label: "Replay", icon: Rewind },
 ];
 
-export default function ArtifactCanvas({ tab, setTab, session, plan, knowledge, skill, events, replayIdx, setReplayIdx, activeLoop, onRunStage, onBranch }) {
+export default function ArtifactCanvas({ tab, setTab, session, plan, knowledge, skill, events, replayIdx, setReplayIdx, activeLoop, onRunStage, onBranch, reasoningTree }) {
   return (
     <div className="h-full flex flex-col">
       {/* tab strip */}
@@ -62,6 +64,9 @@ export default function ArtifactCanvas({ tab, setTab, session, plan, knowledge, 
           >
             {tab === "plan" && (
               <PlanReveal plan={plan} events={events} onRunStage={onRunStage} activeLoop={activeLoop} onBranch={onBranch} />
+            )}
+            {tab === "tree" && (
+              <ReasoningTree tree={reasoningTree} events={events} />
             )}
             {tab === "knowledge" && (
               <KnowledgeGraph knowledge={knowledge} />

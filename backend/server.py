@@ -113,9 +113,8 @@ async def get_session(sid: str):
 
 @api.get("/sessions/{sid}/events")
 async def session_events(sid: str):
-    # rehydrate from mongo if buffer is empty (cold session reload)
-    if not bus.history(sid):
-        await bus.rehydrate(sid)
+    # rehydrate from mongo if buffer is stale/empty (compares counts internally)
+    await bus.rehydrate(sid)
     return {"events": bus.history(sid)}
 
 
@@ -125,6 +124,14 @@ async def session_knowledge(sid: str):
     if not s:
         raise HTTPException(404, "session not found")
     return {"knowledge": s.knowledge, "reasoning_tree": s.reasoning_tree, "confidence_history": s.confidence_history}
+
+
+@api.get("/sessions/{sid}/tree")
+async def session_tree(sid: str):
+    s = runtime.get(sid) or await runtime.load_session(sid)
+    if not s:
+        raise HTTPException(404, "session not found")
+    return {"tree": s.reasoning_tree}
 
 
 @api.post("/sessions/{sid}/plan")
@@ -254,9 +261,8 @@ async def memory_recall(q: str, top_k: int = 8):
 @app.websocket("/api/ws/{sid}")
 async def ws_events(ws: WebSocket, sid: str):
     await ws.accept()
-    # rehydrate persisted events for late/reconnecting clients
-    if not bus.history(sid):
-        await bus.rehydrate(sid)
+    # rehydrate persisted events for late/reconnecting clients (compares counts)
+    await bus.rehydrate(sid)
     q = bus.subscribe(sid)
     try:
         await ws.send_text(json.dumps({"type": "Connected", "session_id": sid}))
@@ -272,6 +278,11 @@ async def ws_events(ws: WebSocket, sid: str):
 
 
 app.include_router(api)
+
+
+@app.on_event("startup")
+async def startup():
+    await mem.ensure_indexes(db)
 
 
 @app.on_event("shutdown")

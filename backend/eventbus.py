@@ -69,19 +69,29 @@ class EventBus:
     def history(self, session_id: str) -> List[Dict[str, Any]]:
         return list(self._buffer.get(session_id, []))
 
-    async def rehydrate(self, session_id: str) -> int:
+    async def rehydrate(self, session_id: str, force: bool = False) -> int:
         """Load events for a session from Mongo into the in-memory buffer.
-        Returns number of events loaded."""
+
+        By default rehydrates only when the buffer has strictly fewer events than
+        Mongo (or is empty). Pass ``force=True`` to unconditionally reload.
+        Returns number of events in the buffer after rehydration.
+        """
         if self._db is None:
-            return 0
-        if self._buffer.get(session_id):
-            return len(self._buffer[session_id])
+            return len(self._buffer.get(session_id, []))
+        buf_len = len(self._buffer.get(session_id, []))
+        try:
+            mongo_count = await self._db.events.count_documents({"session_id": session_id})
+        except Exception:
+            mongo_count = 0
+        if not force and buf_len >= mongo_count and buf_len > 0:
+            return buf_len
+        # Rehydrate (or top up)
         cursor = self._db.events.find({"session_id": session_id}, {"_id": 0}).sort("seq", 1).limit(self._max_buffer)
         docs = await cursor.to_list(self._max_buffer)
-        self._buffer[session_id] = docs
         if docs:
+            self._buffer[session_id] = docs
             self._counter[session_id] = max(d.get("seq", 0) for d in docs)
-        return len(docs)
+        return len(self._buffer.get(session_id, []))
 
 
 bus = EventBus()

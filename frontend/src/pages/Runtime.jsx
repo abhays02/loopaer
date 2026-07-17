@@ -63,6 +63,16 @@ export default function Runtime() {
     return { facts, entities, sources, confidence };
   }, [events]);
 
+  // derive reasoning tree from the LATEST ReasoningTreeUpdated event
+  const reasoningTree = useMemo(() => {
+    for (let i = events.length - 1; i >= 0; i--) {
+      if (events[i].type === "ReasoningTreeUpdated" && events[i].payload?.tree) {
+        return events[i].payload.tree;
+      }
+    }
+    return session?.reasoning_tree || null;
+  }, [events, session]);
+
   const skill = useMemo(() => {
     const ev = [...events].reverse().find((e) => e.type === "SkillGenerated");
     return ev?.payload?.skill;
@@ -140,6 +150,7 @@ export default function Runtime() {
           onRunStage={runStage}
           onBranch={doBranch}
           activeLoop={activeLoop}
+          reasoningTree={reasoningTree}
         />
       </div>
 
