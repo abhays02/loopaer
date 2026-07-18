@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import Landing from "./pages/Landing";
 import Runtime from "./pages/Runtime";
+import Diff from "./pages/Diff";
 import "./App.css";
 
 function CustomCursor() {
@@ -43,6 +44,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/runtime/:sid" element={<Runtime />} />
+          <Route path="/diff/:sid1/:sid2" element={<Diff />} />
         </Routes>
       </AnimatePresence>
     </BrowserRouter>

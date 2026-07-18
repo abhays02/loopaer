@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from "framer-motion";
-import { Play, Pause, Zap, GitBranch, ChevronDown, Cpu, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { Play, Pause, Zap, GitBranch, ChevronDown, Cpu, Search, ShieldCheck, Sparkles, GitCompare } from "lucide-react";
 
 const STAGES = [
   { id: "plan",     icon: Cpu,        label: "Plan",     color: "var(--acid)" },
@@ -42,7 +42,7 @@ function DockIcon({ mouseX, children, label, onClick, testid, activeColor }) {
   );
 }
 
-export default function BottomDock({ session, models, anyRunning, onRunStage, onBranch, onSelectModel, onPauseAll, onResumeAll }) {
+export default function BottomDock({ session, models, anyRunning, onRunStage, onBranch, onBranchDiff, onSelectModel, onPauseAll, onResumeAll }) {
   const [modelOpen, setModelOpen] = useState(false);
   const [branchInput, setBranchInput] = useState("");
   const mouseX = useMotionValue(Infinity);

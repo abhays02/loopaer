@@ -1,4 +1,4 @@
-# Lumen Runtime — PRD
+# Loopaer — PRD
 
 ## Original problem statement
 Build an AI-native operating environment where autonomous research loops continuously
@@ -6,6 +6,21 @@ discover, verify, organize, visualize, and transform knowledge into reusable AI 
 Event-driven, loop-driven. UI is a visualization of cognition. Not a chatbot, not an
 IDE, not a search engine — a runtime that executes autonomous reasoning loops while
 dynamically generating the best interface to expose those loops.
+
+## Rebrand — Iteration 5
+- **Lumen → Loopaer** across FE + BE + browser title + logo mark + copy.
+- Apple product-page discipline: warm-ivory + ink base, SF Pro Display + New York italic, one small acid accent, massive whitespace, single focal moments per section.
+- **Three.js interactive hero** (`LoopScene.jsx`) — real WebGL: physical glass torus rings tilted at different angles orbiting a pulsing physical-material core (glass + emissive + clearcoat + transmission), 100 particles drifting through space, rim lights (ivory · cyan · amber · acid), auto-rotation with pointer-drag control. React Three Fiber v9 (React 19 compatible).
+- Section transitions driven by scroll (`useScroll` + parallax y/opacity per section).
+- Warm ambient grain + radial glow instead of stark black + neon.
+
+## Reasoning Diff view (`/diff/:sid1/:sid2`) — Iteration 5
+- Side-by-side reasoning trees from two sessions (typically a session and its branch).
+- Independent live event streams per side (WebSocket subscription per session).
+- Per-session controls: pause all · resume all · compile skill.
+- Loop state pills (planner finished · research running etc.) per side.
+- **Diff strip** at the bottom: `only in A` (acid) · `shared` · `only in B` (cyan). Turns Loopaer into a science-of-cognition instrument — see exactly where two versions of thinking diverged.
+- Dock now has a `branch → diff` icon that clones the current session and jumps straight to the diff view with auto-started plan/research on the branch.
 
 Design references: nominal.so (bold animated typography, dark, sharp) + dock.cool
 (smooth liquid glass, spring physics, floating dock).

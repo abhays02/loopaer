@@ -88,6 +88,13 @@ export default function Runtime() {
     toast.success("branched", { description: goal || "same goal" });
     nav(`/runtime/${n.id}`);
   };
+  const doBranchDiff = async () => {
+    const n = await api.branch(sid);
+    toast.success("branched into diff", { description: "compare both live" });
+    // fire skill/planner on new session so it runs
+    try { await api.runPlan(n.id); await api.runResearch(n.id); } catch (e) {}
+    nav(`/diff/${sid}/${n.id}`);
+  };
   const runStage = async (stage) => {
     const fn = { plan: api.runPlan, research: api.runResearch, verify: api.runVerify, skill: api.runSkill }[stage];
     if (fn) { await fn(sid); toast(`${stage} started`); }
@@ -180,6 +187,7 @@ export default function Runtime() {
         onRunStage={runStage}
         onBranch={doBranch}
         onSelectModel={(mid) => { setModelOverride(mid); setSession((s) => s ? {...s, model: mid} : s); toast(`model → ${mid.split('/').pop()}`); }}
+        onBranchDiff={doBranchDiff}
         onPauseAll={() => loops.filter(l => l.state === "running").forEach(l => doPause(l.id))}
         onResumeAll={() => loops.filter(l => l.state === "paused").forEach(l => doResume(l.id))}
       />

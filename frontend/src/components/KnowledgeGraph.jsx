@@ -94,7 +94,7 @@ export default function KnowledgeGraph({ knowledge }) {
                 <circle cx={n.x} cy={n.y} r={n.r} fill={fill} />
                 {isRoot && (
                   <text x={n.x} y={n.y + 5} textAnchor="middle" fill="black" fontSize="10" fontFamily="JetBrains Mono" fontWeight="700">
-                    LUMEN
+                    LOOPAER
                   </text>
                 )}
                 <text

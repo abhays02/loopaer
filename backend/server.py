@@ -1,4 +1,4 @@
-"""Lumen Runtime — event-driven autonomous research runtime.
+"""LOOPAER — event-driven autonomous research runtime.
 
 Endpoints:
   POST   /api/sessions                 create session (goal, model)
@@ -48,7 +48,7 @@ db = mongo[DB_NAME]
 runtime = Runtime(db)
 bus.attach_db(db)
 
-app = FastAPI(title="Lumen Runtime")
+app = FastAPI(title="Loopaer Runtime")
 api = APIRouter(prefix="/api")
 
 app.add_middleware(
@@ -60,7 +60,7 @@ app.add_middleware(
 )
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("lumen")
+logger = logging.getLogger("loopaer")
 
 
 # ------- schemas -------
@@ -81,7 +81,7 @@ class BranchBody(BaseModel):
 
 @api.get("/")
 async def root():
-    return {"service": "lumen-runtime", "status": "online"}
+    return {"service": "loopaer-runtime", "status": "online"}
 
 
 @api.get("/models")

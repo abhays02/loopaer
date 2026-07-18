@@ -233,10 +233,20 @@ class Runtime:
         if not doc:
             return None
         s = Session(sid, doc.get("goal", ""), doc.get("model", DEFAULT_MODEL), self.db)
-        # restore knowledge
+        # restore knowledge + reasoning tree from persisted collections/events
         k = await self.db.knowledge.find_one({"session_id": sid}, {"_id": 0})
         if k:
             s.knowledge = k.get("knowledge", s.knowledge)
+        # Rebuild reasoning tree from the last ReasoningTreeUpdated event.
+        try:
+            last_tree = await self.db.events.find_one(
+                {"session_id": sid, "type": "ReasoningTreeUpdated"},
+                {"_id": 0}, sort=[("seq", -1)]
+            )
+            if last_tree and last_tree.get("payload", {}).get("tree"):
+                s.reasoning_tree = last_tree["payload"]["tree"]
+        except Exception:
+            pass
         s.plan = doc.get("plan")
         self.sessions[sid] = s
         return s
@@ -581,7 +591,7 @@ class Runtime:
         return False
 
     async def branch_session(self, source_sid: str, new_goal: Optional[str] = None) -> Optional[Session]:
-        src = self.sessions.get(source_sid)
+        src = self.sessions.get(source_sid) or await self.load_session(source_sid)
         if not src:
             return None
         goal = new_goal or src.goal
