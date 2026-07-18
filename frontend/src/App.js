@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Landing from "./pages/Landing";
 import Runtime from "./pages/Runtime";
 import Diff from "./pages/Diff";
+import Snapshot from "./pages/Snapshot";
 import "./App.css";
 
 function CustomCursor() {
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/runtime/:sid" element={<Runtime />} />
           <Route path="/diff/:sid1/:sid2" element={<Diff />} />
+          <Route path="/snapshot/:snapId" element={<Snapshot />} />
         </Routes>
       </AnimatePresence>
     </BrowserRouter>

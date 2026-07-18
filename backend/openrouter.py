@@ -35,16 +35,31 @@ FALLBACK_CASCADE = [
 
 
 class OpenRouterClient:
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY", "")
+    def __init__(self, api_key: Optional[str] = None, key_provider=None):
+        self._static_key = api_key or os.environ.get("OPENROUTER_API_KEY", "")
+        self._key_provider = key_provider  # async () -> str
         self.base_url = "https://openrouter.ai/api/v1"
+        self.free_only = os.environ.get("FREE_MODELS_ONLY", "0") == "1"
+
+    async def _key(self) -> str:
+        if self._key_provider is not None:
+            try:
+                k = await self._key_provider()
+                if k:
+                    return k
+            except Exception:
+                pass
+        return self._static_key
 
     async def _call(self, payload: Dict[str, Any]) -> str:
+        api_key = await self._key()
+        if not api_key:
+            raise RuntimeError("OpenRouter key not configured")
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://lumen-runtime.app",
-            "X-Title": "Lumen Runtime",
+            "HTTP-Referer": "https://loopaer.app",
+            "X-Title": "Loopaer",
         }
         async with httpx.AsyncClient(timeout=120.0) as http:
             r = await http.post(f"{self.base_url}/chat/completions", headers=headers, json=payload)
@@ -54,6 +69,14 @@ class OpenRouterClient:
             choice = data.get("choices", [{}])[0]
             return choice.get("message", {}).get("content", "") or ""
 
+    def _enforce_free(self, model: str) -> str:
+        """If FREE_MODELS_ONLY is on, remap any non-free selection to the free router."""
+        if not self.free_only:
+            return model
+        if model and (model.endswith(":free") or model == "openrouter/free"):
+            return model
+        return "openrouter/free"
+
     async def chat(
         self,
         messages: List[Dict[str, str]],
@@ -61,8 +84,9 @@ class OpenRouterClient:
         temperature: float = 0.4,
         max_tokens: int = 1400,
     ) -> str:
-        if not self.api_key:
+        if not await self._key():
             raise RuntimeError("OPENROUTER_API_KEY not configured")
+        model = self._enforce_free(model)
         # Try requested model, then cascade.
         errors = []
         tried = []
@@ -110,8 +134,10 @@ class OpenRouterClient:
         max_tokens: int = 1200,
     ) -> AsyncIterator[str]:
         """Yield delta text tokens as they arrive from OpenRouter (SSE)."""
-        if not self.api_key:
+        api_key = await self._key()
+        if not api_key:
             raise RuntimeError("OPENROUTER_API_KEY not configured")
+        model = self._enforce_free(model)
         payload = {
             "model": model,
             "messages": messages,
@@ -120,11 +146,11 @@ class OpenRouterClient:
             "stream": True,
         }
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "Accept": "text/event-stream",
-            "HTTP-Referer": "https://lumen-runtime.app",
-            "X-Title": "Lumen Runtime",
+            "HTTP-Referer": "https://loopaer.app",
+            "X-Title": "Loopaer",
         }
         async with httpx.AsyncClient(timeout=120.0) as http:
             async with http.stream("POST", f"{self.base_url}/chat/completions", headers=headers, json=payload) as r:
@@ -150,4 +176,6 @@ class OpenRouterClient:
 
 
 def list_models() -> List[Dict[str, str]]:
+    if os.environ.get("FREE_MODELS_ONLY", "0") == "1":
+        return list(FREE_MODELS)
     return FREE_MODELS + PAID_MODELS

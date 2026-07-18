@@ -29,5 +29,10 @@ export const api = {
   branch: (sid, goal) => http.post(`/sessions/${sid}/branch`, { goal }).then(r => r.data),
   getEvents: (sid) => http.get(`/sessions/${sid}/events`).then(r => r.data),
   getKnowledge: (sid) => http.get(`/sessions/${sid}/knowledge`).then(r => r.data),
+  patchSession: (sid, payload) => http.patch(`/sessions/${sid}`, payload).then(r => r.data),
+  createSnapshot: (sid1, sid2, note) => http.post("/diff/snapshot", { sid1, sid2, note }).then(r => r.data),
+  getSnapshot: (snapId) => http.get(`/snapshots/${snapId}`).then(r => r.data),
+  secretStatus: () => http.get("/secrets/status").then(r => r.data),
+  setOpenRouterKey: (api_key) => http.put("/secrets/openrouter", { api_key }).then(r => r.data),
   listSkills: () => http.get("/skills").then(r => r.data),
 };

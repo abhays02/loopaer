@@ -192,7 +192,11 @@ export default function Runtime() {
         anyRunning={anyRunning}
         onRunStage={runStage}
         onBranch={doBranch}
-        onSelectModel={(mid) => { setModelOverride(mid); setSession((s) => s ? {...s, model: mid} : s); toast(`model → ${mid.split('/').pop()}`); }}
+        onSelectModel={(mid) => {
+          setModelOverride(mid);
+          setSession((s) => s ? {...s, model: mid} : s);
+          api.patchSession(sid, { model: mid }).then(() => toast(`model → ${mid.split('/').pop()}`)).catch(() => toast.error("failed to save model"));
+        }}
         onBranchDiff={doBranchDiff}
         onPauseAll={() => loops.filter(l => l.state === "running").forEach(l => doPause(l.id))}
         onResumeAll={() => loops.filter(l => l.state === "paused").forEach(l => doResume(l.id))}

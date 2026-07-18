@@ -6,13 +6,15 @@ import SkillPanel from "./SkillPanel";
 import PlanReveal from "./PlanReveal";
 import ReplayScrubber from "./ReplayScrubber";
 import ReasoningTree from "./ReasoningTree";
-import { Layers, Brain, ShieldCheck, Sparkles, Rewind, Network } from "lucide-react";
+import GenUIPanel from "./GenUIPanel";
+import { Layers, Brain, ShieldCheck, Sparkles, Rewind, Network, Wand2 } from "lucide-react";
 
 const TABS = [
   { id: "plan", label: "Plan", icon: Brain },
   { id: "tree", label: "Reasoning", icon: Network },
   { id: "knowledge", label: "Knowledge", icon: Layers },
   { id: "confidence", label: "Confidence", icon: ShieldCheck },
+  { id: "genui", label: "GenUI", icon: Wand2 },
   { id: "skill", label: "Skill", icon: Sparkles },
   { id: "replay", label: "Replay", icon: Rewind },
 ];
@@ -73,6 +75,9 @@ export default function ArtifactCanvas({ tab, setTab, session, plan, knowledge, 
             )}
             {tab === "confidence" && (
               <ConfidenceMeter knowledge={knowledge} />
+            )}
+            {tab === "genui" && (
+              <GenUIPanel session={session} knowledge={knowledge} />
             )}
             {tab === "skill" && (
               <SkillPanel skill={skill} onGenerate={() => onRunStage("skill")} />

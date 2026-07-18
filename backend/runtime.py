@@ -173,7 +173,11 @@ class Runtime:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
         self.sessions: Dict[str, Session] = {}
-        self.client = OpenRouterClient()
+        # Provider fetches the encrypted key from Mongo, decrypts it on demand.
+        import secretstore
+        self.client = OpenRouterClient(
+            key_provider=lambda: secretstore.get_openrouter_key(self.db)
+        )
 
     async def _stream_json(self, session: Session, loop: Loop, messages: List[Dict[str, str]]) -> Any:
         """Stream tokens for a JSON-producing prompt, emitting TokenStreamed events.

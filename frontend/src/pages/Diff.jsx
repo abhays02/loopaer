@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { api } from "../lib/api";
-import { ChevronLeft, GitBranch, Play, Pause, Sparkles } from "lucide-react";
+import { ChevronLeft, GitBranch, Play, Pause, Sparkles, Share2 } from "lucide-react";
 import ReasoningTree from "../components/ReasoningTree";
 import { toast } from "sonner";
 import { useEventBus } from "../lib/useEventBus";
@@ -68,6 +68,19 @@ export default function Diff() {
   ).then(() => toast(`resumed ${sid.slice(-6)}`));
   const runSkill = (sid) => api.runSkill(sid).then(() => toast("compiling skill…"));
 
+  const shareSnapshot = async () => {
+    try {
+      const note = window.prompt("Note for this snapshot (optional):") || "";
+      const snap = await api.createSnapshot(sid1, sid2, note);
+      const url = `${window.location.origin}/snapshot/${snap.id}`;
+      try { await navigator.clipboard.writeText(url); } catch (e) {}
+      toast.success("Snapshot created", { description: "URL copied to clipboard" });
+      window.open(url, "_blank");
+    } catch (e) {
+      toast.error("Snapshot failed", { description: e?.message });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[var(--ink)] text-[var(--ivory)] p-6 relative">
       <div className="fixed inset-0 grain pointer-events-none z-0" />
@@ -86,6 +99,10 @@ export default function Diff() {
           <span>{diff.shared.length} shared</span>
           <span className="text-[var(--acid)]">·</span>
           <span>{diff.only1.length + diff.only2.length} divergent</span>
+          <div className="w-px h-4 bg-white/12 mx-2" />
+          <button data-testid="diff-share-btn" onClick={shareSnapshot} className="btn-ghost !py-1.5 !px-3 !text-[11px] inline-flex items-center gap-1.5">
+            <Share2 size={11} /> share snapshot
+          </button>
         </div>
       </div>
 
