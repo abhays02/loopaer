@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { api } from "../lib/api";
 import LoopScene from "../components/LoopScene";
+import WorkbenchPreview from "../components/WorkbenchPreview";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 const SUGGESTIONS = [
@@ -74,6 +75,7 @@ export default function Landing() {
           </div>
           <div className="hidden md:flex items-center gap-9 text-[13px] text-[var(--ivory)]/60 font-display">
             <a data-hover className="hover:text-[var(--ivory)] transition-colors" href="#runtime">Runtime</a>
+            <a data-hover className="hover:text-[var(--ivory)] transition-colors" href="#workbench">Workbench</a>
             <a data-hover className="hover:text-[var(--ivory)] transition-colors" href="#loops">Loops</a>
             <a data-hover className="hover:text-[var(--ivory)] transition-colors" href="#skills">Skills</a>
             <a data-hover className="hover:text-[var(--ivory)] transition-colors" href="#philosophy">Philosophy</a>
@@ -195,7 +197,10 @@ export default function Landing() {
         body="Every loop emits events. Every event chooses its own renderer. The interface is a live visualization of cognition — no static pages, no pre-rendered dashboards."
       />
 
-      {/* SECTION 3 — Loops */}
+      {/* SECTION 3 — Workbench live preview (the backend, made visible) */}
+      <WorkbenchPreview />
+
+      {/* SECTION 4 — Loops */}
       <section id="loops" className="relative z-10 py-40 px-6">
         <div className="max-w-[1440px] mx-auto">
           <div className="label-tag mb-6">EIGHT LOOPS · ONE RUNTIME</div>
