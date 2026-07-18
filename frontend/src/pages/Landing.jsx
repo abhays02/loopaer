@@ -3,7 +3,9 @@ import { motion, useMotionValue, useSpring, useTransform, animate as animateFm }
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { api } from "../lib/api";
-import { ArrowRight, Sparkles, Cpu, Layers, Zap, ArrowUpRight } from "lucide-react";
+import HeroLoopViz from "../components/HeroLoopViz";
+import LoopMiniViz from "../components/LoopMiniViz";
+import { ArrowRight, Sparkles, Cpu, Layers, Zap, ArrowUpRight, Radio, Activity } from "lucide-react";
 
 const SUGGESTIONS = [
   "vision-language models for OCR on low-resource languages",
@@ -43,14 +45,74 @@ function useScramble(target, delay = 0) {
   return out;
 }
 
-/** Animated big number counter. */
-function Counter({ to, duration = 1.6 }) {
+/** Animated big number counter — re-runs periodically so it feels alive. */
+function Counter({ to, duration = 1.8 }) {
   const [val, setVal] = useState(0);
   useEffect(() => {
-    const c = animateFm(0, to, { duration, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => setVal(Math.floor(v)) });
-    return () => c.stop();
+    let cancelled = false;
+    const run = () => {
+      if (cancelled) return;
+      const c = animateFm(0, to, { duration, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => !cancelled && setVal(Math.floor(v)) });
+      return c;
+    };
+    const c = run();
+    // Every ~9s, briefly dip and recount so the numbers feel live
+    const interval = setInterval(() => {
+      animateFm(to, Math.max(0, to - 2), { duration: 0.35, onUpdate: (v) => !cancelled && setVal(Math.floor(v)) }).then(() => {
+        animateFm(Math.max(0, to - 2), to, { duration: 0.9, ease: "easeOut", onUpdate: (v) => !cancelled && setVal(Math.floor(v)) });
+      });
+    }, 9000);
+    return () => { cancelled = true; c?.stop?.(); clearInterval(interval); };
   }, [to, duration]);
   return <>{val.toLocaleString()}</>;
+}
+
+/** Small live counter that ticks up and back down like a heart rate. */
+function LivePing() {
+  const [n, setN] = useState(3);
+  useEffect(() => {
+    const t = setInterval(() => setN((v) => 1 + Math.floor(Math.random() * 6)), 1300);
+    return () => clearInterval(t);
+  }, []);
+  return <span className="tabular-nums">{n} active</span>;
+}
+
+/** Cycles through a list of words with a typewriter effect. Continuous. */
+function TypeCycle({ words }) {
+  const [wIdx, setWIdx] = useState(0);
+  const [txt, setTxt] = useState("");
+  const [phase, setPhase] = useState("type"); // type | hold | erase
+  useEffect(() => {
+    let t;
+    const target = words[wIdx];
+    if (phase === "type") {
+      if (txt.length < target.length) {
+        t = setTimeout(() => setTxt(target.slice(0, txt.length + 1)), 55 + Math.random() * 60);
+      } else {
+        t = setTimeout(() => setPhase("hold"), 1400);
+      }
+    } else if (phase === "hold") {
+      t = setTimeout(() => setPhase("erase"), 200);
+    } else {
+      if (txt.length > 0) {
+        t = setTimeout(() => setTxt(target.slice(0, txt.length - 1)), 35);
+      } else {
+        setPhase("type");
+        setWIdx((i) => (i + 1) % words.length);
+      }
+    }
+    return () => clearTimeout(t);
+  }, [txt, phase, wIdx, words]);
+  return (
+    <span className="tabular-nums">
+      {txt}
+      <motion.span
+        animate={{ opacity: [1, 0, 1] }}
+        transition={{ duration: 0.9, repeat: Infinity }}
+        className="text-[var(--acid)]"
+      >|</motion.span>
+    </span>
+  );
 }
 
 export default function Landing() {
@@ -144,16 +206,18 @@ export default function Landing() {
       </div>
 
       {/* HERO */}
-      <div className="relative z-10 px-10 pt-24 max-w-[1500px]">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="label-tag mb-6 font-mono"
-        >
-          {sub1}
-        </motion.div>
+      <div className="relative z-10 px-10 pt-16 max-w-[1500px] grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-10 items-start">
+        <div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="label-tag mb-6 font-mono flex items-center gap-3"
+          >
+            <span className="w-1.5 h-1.5 rounded-full live-pulse" />
+            {sub1}
+          </motion.div>
 
-        <h1 className="font-display text-[clamp(56px,10.5vw,148px)] leading-[0.86] tracking-[-0.04em] font-medium">
+        <h1 className="font-display text-[clamp(48px,8.5vw,124px)] leading-[0.86] tracking-[-0.04em] font-medium">
           <motion.div
             initial={{ opacity: 0, y: 60, filter: "blur(12px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -189,30 +253,56 @@ export default function Landing() {
         <motion.p
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.75 }}
-          className="mt-10 max-w-[640px] text-white/60 leading-relaxed font-mono text-sm"
+          className="mt-8 max-w-[600px] text-white/60 leading-relaxed font-mono text-sm"
         >
           Not a chatbot. Not an IDE. A cognitive operating environment where autonomous
           research loops continuously discover, verify, organize and compile knowledge
           into portable AI skills — while you watch every step happen.
         </motion.p>
 
+        {/* Live system metrics ticker */}
+        <motion.div
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1, duration: 0.8 }}
+          className="mt-10 flex items-center gap-6 font-mono text-[11px] text-white/50"
+        >
+          <div className="flex items-center gap-2">
+            <Radio size={12} className="text-[var(--acid)]" />
+            <span>bus <motion.span
+              className="text-white/90"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.4, repeat: Infinity }}
+            >live</motion.span></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Activity size={12} className="text-[var(--cyan)]" />
+            <span>loops <span className="text-white/90"><LivePing /></span></span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-white/40">memory</span>
+            <span className="text-white/90"><TypeCycle words={["indexed", "recalling", "archiving", "syncing"]} /></span>
+          </div>
+        </motion.div>
+
         {/* Goal input */}
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.95, type: "spring", stiffness: 150, damping: 20 }}
-          whileHover={{ scale: 1.01 }}
-          className="mt-14 glass-strong rounded-2xl p-3 pr-3 flex items-center gap-3 max-w-[860px] relative overflow-hidden"
+          whileHover={{ scale: 1.005 }}
+          className="mt-10 glass-strong rounded-2xl p-3 pr-3 flex items-center gap-3 max-w-[720px] relative overflow-hidden"
           data-testid="landing-goal-container"
           style={{ boxShadow: "0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)" }}
         >
-          {/* animated shimmer */}
           <motion.div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: "linear-gradient(105deg, transparent 40%, rgba(212,255,0,0.06) 50%, transparent 60%)" }}
+            style={{ background: "linear-gradient(105deg, transparent 40%, rgba(212,255,0,0.08) 50%, transparent 60%)" }}
             animate={{ x: ["-100%", "200%"] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
           />
-          <div className="pl-4 text-[var(--acid)] relative z-10"><Sparkles size={18} /></div>
+          <div className="pl-4 text-[var(--acid)] relative z-10">
+            <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }}>
+              <Sparkles size={18} />
+            </motion.div>
+          </div>
           <input
             data-testid="landing-goal-input"
             value={goal}
@@ -239,18 +329,41 @@ export default function Landing() {
         {/* Suggestion chips */}
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2, duration: 0.6 }}
-          className="mt-6 flex flex-wrap gap-2 max-w-[860px]"
+          className="mt-6 flex flex-wrap gap-2 max-w-[720px]"
         >
           {SUGGESTIONS.slice(0, 4).map((s, i) => (
             <motion.button
               key={i}
-              whileHover={{ y: -2 }}
+              whileHover={{ y: -2, backgroundColor: "rgba(212,255,0,0.08)" }}
               onClick={() => setGoal(s)}
-              className="text-xs font-mono px-3 py-1.5 rounded-full border border-white/10 text-white/50 hover:text-white hover:border-[var(--acid)]/50 hover:bg-[var(--acid)]/5 transition-all lowercase"
+              className="text-xs font-mono px-3 py-1.5 rounded-full border border-white/10 text-white/50 hover:text-white hover:border-[var(--acid)]/50 transition-all lowercase"
             >
               → {s}
             </motion.button>
           ))}
+        </motion.div>
+        </div>
+
+        {/* Hero illustration */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7, rotate: -10 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ duration: 1.3, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="relative hidden lg:block h-[520px]"
+        >
+          <HeroLoopViz />
+          <motion.div
+            className="absolute -top-2 -left-2 label-tag !text-[var(--acid)] font-mono"
+            animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 2, repeat: Infinity }}
+          >
+            ▓ runtime · online
+          </motion.div>
+          <motion.div
+            className="absolute bottom-4 right-4 label-tag font-mono text-white/40"
+            animate={{ opacity: [0.3, 0.8, 0.3] }} transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
+          >
+            fps 60 · lat 12ms · ok
+          </motion.div>
         </motion.div>
       </div>
 
@@ -302,14 +415,14 @@ export default function Landing() {
         <div className="label-tag mb-6">→ eight loops · one runtime</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { icon: Cpu, name: "Planner", desc: "understand → question → estimate → plan" },
-            { icon: Zap, name: "Research", desc: "arXiv · GitHub · continuous discovery" },
-            { icon: Layers, name: "Verification", desc: "confidence + contradiction detection" },
-            { icon: Sparkles, name: "Skill Builder", desc: "verified research → portable skill" },
-            { icon: Cpu, name: "Gap Detection", desc: "what is missing? loop again." },
-            { icon: Zap, name: "Knowledge Graph", desc: "every concept becomes a node." },
-            { icon: Layers, name: "Memory", desc: "cumulative · never forgotten." },
-            { icon: Sparkles, name: "Replay", desc: "scrub cognition like video." },
+            { icon: Cpu, name: "Planner", desc: "understand → question → estimate → plan", viz: "plan" },
+            { icon: Zap, name: "Research", desc: "arXiv · GitHub · continuous discovery", viz: "orbit" },
+            { icon: Layers, name: "Verification", desc: "confidence + contradiction detection", viz: "bars" },
+            { icon: Sparkles, name: "Skill Builder", desc: "verified research → portable skill", viz: "spark" },
+            { icon: Cpu, name: "Gap Detection", desc: "what is missing? loop again.", viz: "pulse" },
+            { icon: Zap, name: "Knowledge Graph", desc: "every concept becomes a node.", viz: "graph" },
+            { icon: Layers, name: "Memory", desc: "cumulative · never forgotten.", viz: "stack" },
+            { icon: Sparkles, name: "Replay", desc: "scrub cognition like video.", viz: "wave" },
           ].map((l, i) => (
             <motion.div
               key={l.name}
@@ -318,12 +431,15 @@ export default function Landing() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.05, duration: 0.5 }}
               whileHover={{ y: -4, borderColor: "rgba(212,255,0,0.4)" }}
-              className="panel rounded-xl p-5 group cursor-default relative overflow-hidden"
+              className="panel rounded-xl p-5 group cursor-default relative overflow-hidden min-h-[180px]"
             >
-              <l.icon size={16} className="text-[var(--acid)] mb-3" />
-              <div className="font-display text-lg tracking-tight">{l.name}</div>
-              <div className="text-xs text-white/50 mt-2 leading-relaxed lowercase font-mono">{l.desc}</div>
-              <ArrowUpRight size={14} className="absolute top-4 right-4 text-white/20 group-hover:text-[var(--acid)] transition-colors" />
+              <l.icon size={16} className="text-[var(--acid)] mb-3 relative z-10" />
+              <div className="font-display text-lg tracking-tight relative z-10">{l.name}</div>
+              <div className="text-xs text-white/50 mt-2 leading-relaxed lowercase font-mono relative z-10">{l.desc}</div>
+              <ArrowUpRight size={14} className="absolute top-4 right-4 text-white/20 group-hover:text-[var(--acid)] transition-colors z-10" />
+              <div className="absolute right-2 bottom-2 w-20 h-20 opacity-70 group-hover:opacity-100 transition-opacity">
+                <LoopMiniViz kind={l.viz} />
+              </div>
             </motion.div>
           ))}
         </div>

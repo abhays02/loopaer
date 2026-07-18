@@ -410,10 +410,12 @@ class Runtime:
                             await bus.emit(session.id, "GapDetected", {"gap": g})
                             if g and len(queries) < 2:
                                 queries.append(g[:80])
-                        # attach iteration node to research subtree
+                        # attach iteration node to research subtree — reuse existing task node
+                        # from the planner if it exists, otherwise lazily create one.
                         research_root = None
                         for c in session.reasoning_tree.get("children", []):
-                            if c.get("kind") == "search" or c.get("id") == "research":
+                            # prefer an existing planner-emitted task whose kind is search/extract
+                            if c.get("kind") in ("search", "extract") and c.get("id") != "verify":
                                 research_root = c
                                 break
                         if research_root is None:

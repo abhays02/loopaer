@@ -60,6 +60,8 @@ User → Goal → Planner Loop → Runtime Event Bus →
 - **Iteration 3**: Extraction & verification loops now stream tokens too (previously only planner). Shared `_stream_json` helper on the Runtime class.
 - **Iteration 3**: Animated Reasoning Tree tab in the artifact canvas — iterative walkFlat renderer (no recursion → no stack overflow risk at any depth), color-coded row types (SEARCH/EXTRACT/VERIFY/SYNTH/ITER/FACT/ENT/GAP), confidence pills, expandable chevrons with layout-animated collapse/expand, structure sidebar with leaf/depth stats and legend.
 - **Iteration 3**: Rehydrate now compares in-memory buffer length vs `db.events.count_documents({session_id})` and tops up when Mongo has more (previously only rehydrated when buffer was strictly empty).
+- **Iteration 4 UI upgrade**: Hero got a proper illustration (`HeroLoopViz.jsx`) — pulsing central reasoning core, 3 concentric orbits with 30 nodes, incoming signal pings on dashed lines, rotating outer scale ticks, flickering corner sensor labels. Landing metrics ticker under the headline (typewriter cycling through memory states, live loop counter, pulsing bus indicator). Each of the 8 loop cards on the grid has its own hand-drawn continuously-animating SVG mini-viz (`LoopMiniViz.jsx`) — bars filling, orbits spinning, confidence bars breathing, spark bursts, pulse rings, graph nodes drawing, memory stacks bobbing, replay waveforms dancing.
+- **Iteration 4**: Reasoning tree unified — research loop's iteration nodes now attach to the planner's existing search/extract task node instead of creating a duplicate `research` container.
 
 ## Backlog / P1
 - Real streaming (SSE) tokens from LLM instead of chunked events
