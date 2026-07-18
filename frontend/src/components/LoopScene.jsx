@@ -170,11 +170,12 @@ export default function LoopScene() {
   }, []);
 
   return (
-    <div className="absolute inset-0" data-testid="hero-3d-scene">
+    <div className="absolute inset-0 pointer-events-none" data-testid="hero-3d-scene">
       <Canvas
         camera={{ position: [0, 0.3, 5.6], fov: 40 }}
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        style={{ pointerEvents: "none" }}
       >
         <color attach="background" args={["#0a0a0c"]} />
         <fog attach="fog" args={["#0a0a0c", 6, 14]} />

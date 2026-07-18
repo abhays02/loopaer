@@ -40,7 +40,8 @@
   }
 
   * { border-color: hsl(var(--border) / 0.08); }
-  html, body, #root { height: 100%; }
+  html, body { min-height: 100%; }
+  #root { min-height: 100vh; }
   body {
     background: var(--ink);
     color: var(--ivory);
@@ -48,7 +49,10 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+    overflow-y: auto;
   }
+  /* When runtime page is mounted, lock the viewport (workbench is its own scroll host) */
+  body.runtime-page, body.runtime-page #root { height: 100vh; overflow: hidden; }
   ::selection { background: var(--acid); color: var(--ink); }
 
   /* subtle grain */

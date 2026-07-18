@@ -17,6 +17,12 @@ export default function Runtime() {
   const nav = useNavigate();
   const autostart = loc.state?.autostart;
 
+  // Lock the body scroll while the workbench is mounted; restore on unmount.
+  useEffect(() => {
+    document.body.classList.add("runtime-page");
+    return () => document.body.classList.remove("runtime-page");
+  }, []);
+
   const [session, setSession] = useState(null);
   const [modelOverride, setModelOverride] = useState(null); // client-side selected model
   const [selectedLoop, setSelectedLoop] = useState(null);
