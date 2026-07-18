@@ -86,8 +86,8 @@
   /* Apple-style liquid glass — subtle, dimensional, warm undertone */
   .glass {
     background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
     border: 1px solid rgba(255,255,255,0.09);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.10),
@@ -97,8 +97,8 @@
 
   .glass-strong {
     background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
-    backdrop-filter: blur(32px) saturate(200%);
-    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
     border: 1px solid rgba(255,255,255,0.12);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.14),

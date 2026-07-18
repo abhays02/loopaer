@@ -6,6 +6,8 @@ import Landing from "./pages/Landing";
 import Runtime from "./pages/Runtime";
 import Diff from "./pages/Diff";
 import Snapshot from "./pages/Snapshot";
+import AuthPage from "./pages/AuthPage";
+import { AuthProvider } from "./lib/auth";
 import "./App.css";
 
 function CustomCursor() {
@@ -39,16 +41,20 @@ function CustomCursor() {
 export default function App() {
   return (
     <BrowserRouter>
-      <CustomCursor />
-      <Toaster theme="dark" position="bottom-center" toastOptions={{ style: { background: "rgba(15,15,15,0.95)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "JetBrains Mono, monospace" } }} />
-      <AnimatePresence mode="wait">
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/runtime/:sid" element={<Runtime />} />
-          <Route path="/diff/:sid1/:sid2" element={<Diff />} />
-          <Route path="/snapshot/:snapId" element={<Snapshot />} />
-        </Routes>
-      </AnimatePresence>
+      <AuthProvider>
+        <CustomCursor />
+        <Toaster theme="dark" position="bottom-center" toastOptions={{ style: { background: "rgba(15,15,15,0.95)", color: "white", border: "1px solid rgba(255,255,255,0.1)", fontFamily: "-apple-system, SF Pro Display, Inter, sans-serif" } }} />
+        <AnimatePresence mode="wait">
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/signin" element={<AuthPage mode="signin" />} />
+            <Route path="/signup" element={<AuthPage mode="signup" />} />
+            <Route path="/runtime/:sid" element={<Runtime />} />
+            <Route path="/diff/:sid1/:sid2" element={<Diff />} />
+            <Route path="/snapshot/:snapId" element={<Snapshot />} />
+          </Routes>
+        </AnimatePresence>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

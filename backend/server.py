@@ -20,7 +20,7 @@ Endpoints:
   GET    /api/models                   list of available models
   GET    /api/skills                   list all persisted skills
 """
-from fastapi import FastAPI, APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient  # noqa
@@ -39,6 +39,8 @@ from eventbus import bus
 import memory as mem
 import genui
 import secretstore
+import auth as authmod
+import exporters
 import uuid
 
 ROOT = Path(__file__).parent
@@ -292,6 +294,46 @@ async def get_skill(skill_id: str):
     return doc
 
 
+@api.get("/skills/{skill_id}/export/{fmt}")
+async def export_skill(skill_id: str, fmt: str):
+    """One-click exports: claude, cursor, openai, mcp."""
+    if fmt not in exporters.FORMATTERS:
+        raise HTTPException(400, f"unknown format: {fmt}. Available: {list(exporters.FORMATTERS)}")
+    skill = await db.skills.find_one({"id": skill_id}, {"_id": 0})
+    if not skill:
+        raise HTTPException(404, "skill not found")
+    payload = exporters.FORMATTERS[fmt](skill)
+    return {"format": fmt, "skill_id": skill_id, "payload": payload}
+
+
+# ---- Auth ----
+
+@api.post("/auth/signup")
+async def auth_signup(body: authmod.SignupBody):
+    return await authmod.signup(db, body)
+
+
+@api.post("/auth/login")
+async def auth_login(body: authmod.LoginBody):
+    return await authmod.login(db, body)
+
+
+@api.get("/auth/me")
+async def auth_me(authorization: str | None = None):
+    from fastapi import Request  # not needed; use raw header from request scope in FastAPI dep
+    # simple parse manually here to avoid depending on FastAPI's Depends chain
+    return {"detail": "use header-based /auth/whoami"}
+
+
+@api.get("/auth/whoami")
+async def auth_whoami(authorization: str | None = Header(default=None)):
+    user = await authmod.current_user(authorization=authorization)
+    if not user:
+        raise HTTPException(401, "not authenticated")
+    doc = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
+    return {"user": doc}
+
+
 @api.get("/memory")
 async def get_memory(limit: int = 200):
     docs = await mem.list_all(db, limit=limit)
@@ -424,6 +466,7 @@ app.include_router(api)
 async def startup():
     await mem.ensure_indexes(db)
     await secretstore.bootstrap(db)
+    await authmod.ensure_indexes(db)
 
 
 @app.on_event("shutdown")

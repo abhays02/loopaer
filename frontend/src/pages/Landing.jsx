@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { api } from "../lib/api";
 import LoopScene from "../components/LoopScene";
 import WorkbenchPreview from "../components/WorkbenchPreview";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { useAuth } from "../lib/auth";
+import { Link } from "react-router-dom";
+import { ArrowRight, ArrowUpRight, LogOut } from "lucide-react";
 
 const SUGGESTIONS = [
   "vision-language models for OCR",
@@ -21,6 +23,7 @@ export default function Landing() {
   const [busy, setBusy] = useState(false);
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
   const nav = useNavigate();
+  const auth = useAuth();
 
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
@@ -84,6 +87,17 @@ export default function Landing() {
             <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-[var(--ivory)]/50">
               <span className="w-1.5 h-1.5 rounded-full live-pulse" /> online
             </div>
+            {auth?.user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-display text-[var(--ivory)]/70 hidden sm:inline">{auth.user.name || auth.user.email}</span>
+                <button data-testid="nav-logout" onClick={() => auth.logout()} className="btn-ghost !py-1.5 !px-3 !text-[11px] inline-flex items-center gap-1.5"><LogOut size={11} /> sign out</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link to="/signin" data-testid="nav-signin" className="text-[12px] font-display text-[var(--ivory)]/70 hover:text-[var(--ivory)] transition-colors">Sign in</Link>
+                <Link to="/signup" data-testid="nav-signup" className="btn-primary !py-1.5 !px-3 !text-[12px]">Create account</Link>
+              </div>
+            )}
           </div>
         </div>
       </motion.div>
