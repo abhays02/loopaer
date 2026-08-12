@@ -19,9 +19,24 @@ Endpoints:
 
   GET    /api/models                   list of available models
   GET    /api/skills                   list all persisted skills
+
+Command center (platform content and pipeline demo):
+  GET    /api/platform/health                       storage mode and engine status
+  GET    /api/platform/use-cases                    use-case library (?function= filter)
+  GET    /api/platform/connectors                   mocked enterprise connector catalog
+  GET    /api/platform/pillars                      differentiation pillars
+  GET    /api/platform/outcomes                     invented-for-demo outcome metrics
+  GET    /api/platform/pipelines/stages             pipeline stage map and scenarios
+  POST   /api/platform/pipelines/run                start a demo orchestration run
+  GET    /api/platform/pipelines/{run_id}           run state
+  GET    /api/platform/pipelines/{run_id}/events    ordered event replay
+  GET    /api/platform/pipelines/{run_id}/stream    server-sent event stream
+  POST   /api/platform/pipelines/{run_id}/cancel    cancel a running demo
+  WS     /api/ws/{run_id}                           live pipeline events (same route as sessions)
 """
 from fastapi import FastAPI, APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from pymongo import MongoClient  # noqa
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -41,16 +56,23 @@ import genui
 import secretstore
 import auth as authmod
 import exporters
+import commandcenter as cc
 import uuid
 
 ROOT = Path(__file__).parent
 load_dotenv(ROOT / ".env")
 
-MONGO_URL = os.environ["MONGO_URL"]
-DB_NAME = os.environ["DB_NAME"]
+# MongoDB is optional. When MONGO_URL is missing or the server cannot be
+# reached, the command center keeps working from in-memory storage so the
+# demo experience never depends on infrastructure being up.
+MONGO_URL = os.environ.get("MONGO_URL", "")
+DB_NAME = os.environ.get("DB_NAME", "loopaer")
 
-mongo = AsyncIOMotorClient(MONGO_URL)
-db = mongo[DB_NAME]
+mongo = AsyncIOMotorClient(MONGO_URL, serverSelectionTimeoutMS=1500) if MONGO_URL else None
+db = mongo[DB_NAME] if mongo is not None else None
+
+# Tracks whether persisted storage is actually reachable; set during startup.
+STORAGE_MODE = "in-memory"
 
 runtime = Runtime(db)
 bus.attach_db(db)
@@ -438,6 +460,124 @@ async def get_snapshot(snap_id: str):
     return doc
 
 
+# ------- Command center: platform content and pipeline demo -------
+
+class StartPipeline(BaseModel):
+    scenario: str = "ops-triage"
+    speed: float = 1.0
+
+
+@api.get("/platform/health")
+async def platform_health():
+    """Reports whether persisted storage is live or the demo is on in-memory fallback."""
+    return {
+        "service": "loopaer-command-center",
+        "storage": STORAGE_MODE,
+        "engine": "online",
+        "time": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@api.get("/platform/use-cases")
+async def platform_use_cases(function: str | None = None):
+    """Use-case library for the landing experience. Optionally filtered by function."""
+    cases = cc.USE_CASES
+    if function:
+        cases = [c for c in cases if c["function"] == function]
+    return {"use_cases": cases, "functions": cc.USE_CASE_FUNCTIONS}
+
+
+@api.get("/platform/connectors")
+async def platform_connectors():
+    """Mocked enterprise connector catalog. Every connector is demo content."""
+    return {"connectors": cc.CONNECTORS}
+
+
+@api.get("/platform/pillars")
+async def platform_pillars():
+    """Differentiation pillars shown in the command center landing."""
+    return {"pillars": cc.PILLARS}
+
+
+@api.get("/platform/outcomes")
+async def platform_outcomes():
+    """Outcomes demo data. All values are invented for this demo."""
+    return {"outcomes": cc.OUTCOMES}
+
+
+@api.get("/platform/pipelines/stages")
+async def platform_pipeline_stages():
+    """The stage map the frontend uses to draw the pipeline track."""
+    return {"stages": cc.PIPELINE_STAGES, "scenarios": list(cc.SCENARIOS.values())}
+
+
+@api.post("/platform/pipelines/run")
+async def platform_pipeline_run(body: StartPipeline):
+    """Start a demo orchestration run. Stream its events on the websocket
+    route /api/ws/{run_id} or the SSE route /api/platform/pipelines/{run_id}/stream."""
+    run = cc.engine.start(body.scenario, speed=body.speed)
+    return {"run": run}
+
+
+@api.get("/platform/pipelines/{run_id}")
+async def platform_pipeline_get(run_id: str):
+    run = cc.engine.get(run_id)
+    if not run:
+        raise HTTPException(404, "pipeline run not found")
+    return {"run": run}
+
+
+@api.get("/platform/pipelines/{run_id}/events")
+async def platform_pipeline_events(run_id: str):
+    """Ordered replay of every event emitted for this run."""
+    run = cc.engine.get(run_id)
+    if not run:
+        raise HTTPException(404, "pipeline run not found")
+    return {"events": cc.engine.events(run_id)}
+
+
+@api.post("/platform/pipelines/{run_id}/cancel")
+async def platform_pipeline_cancel(run_id: str):
+    ok = cc.engine.cancel(run_id)
+    if not ok:
+        raise HTTPException(404, "pipeline run not found or not running")
+    return {"ok": True}
+
+
+@api.get("/platform/pipelines/{run_id}/stream")
+async def platform_pipeline_stream(run_id: str):
+    """Server-sent events mirror of the pipeline event stream.
+
+    Late subscribers first receive the events already emitted, then live
+    ones, until the run reaches a terminal state.
+    """
+    run = cc.engine.get(run_id)
+    if not run:
+        raise HTTPException(404, "pipeline run not found")
+
+    async def event_source():
+        # Subscribe first so nothing emitted mid-handshake is lost, then
+        # replay whatever history arrived before the subscription, then go live.
+        q = bus.subscribe(run_id)
+        try:
+            drained = set()
+            for ev in bus.history(run_id):
+                drained.add(ev["id"])
+                yield f"data: {json.dumps(ev)}\n\n"
+            if cc.engine.get(run_id)["state"] in ("completed", "canceled"):
+                return
+            while True:
+                ev = await q.get()
+                if ev["id"] not in drained:
+                    yield f"data: {json.dumps(ev)}\n\n"
+                if ev["type"] in ("PipelineCompleted", "PipelineCanceled"):
+                    return
+        finally:
+            bus.unsubscribe(run_id, q)
+
+    return StreamingResponse(event_source(), media_type="text/event-stream")
+
+
 # ------- WebSocket event stream -------
 
 @app.websocket("/api/ws/{sid}")
@@ -464,11 +604,23 @@ app.include_router(api)
 
 @app.on_event("startup")
 async def startup():
-    await mem.ensure_indexes(db)
-    await secretstore.bootstrap(db)
-    await authmod.ensure_indexes(db)
+    global STORAGE_MODE
+    if mongo is None or db is None:
+        logger.info("MONGO_URL not set; running the command center on in-memory storage")
+        return
+    try:
+        await mongo.admin.command("ping")
+        await mem.ensure_indexes(db)
+        await secretstore.bootstrap(db)
+        await authmod.ensure_indexes(db)
+        STORAGE_MODE = "mongo"
+        logger.info("connected to MongoDB (%s)", DB_NAME)
+    except Exception as e:
+        STORAGE_MODE = "in-memory"
+        logger.warning("MongoDB unreachable (%s); falling back to in-memory storage", e)
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    mongo.close()
+    if mongo is not None:
+        mongo.close()
