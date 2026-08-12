@@ -1,0 +1,377 @@
+/* LOOPAER — Command Center landing styles
+   Tokens come from design_guidelines.json v2.0 (landing_design_system). */
+
+@font-face {
+  font-family: "Cabinet Grotesk";
+  src: url("./fonts/cabinet-grotesk-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cabinet Grotesk";
+  src: url("./fonts/cabinet-grotesk-800.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cabinet Grotesk";
+  src: url("./fonts/cabinet-grotesk-900.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --lc-void: #050505;
+  --lc-panel: #0a0a0a;
+  --lc-raised: #101010;
+  --lc-hairline: rgba(255, 255, 255, 0.08);
+  --lc-gridline: rgba(255, 255, 255, 0.05);
+  --lc-acid: #d4ff00;
+  --lc-acid-glow: rgba(212, 255, 0, 0.25);
+  --lc-cyan: #00e5ff;
+  --lc-text: #ffffff;
+  --lc-text-2: rgba(255, 255, 255, 0.62);
+  --lc-text-3: rgba(255, 255, 255, 0.4);
+  --lc-on-acid: #050505;
+  --lc-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --lc-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.landing {
+  background: var(--lc-void);
+  color: var(--lc-text);
+  font-family: "Cabinet Grotesk", "Unbounded", sans-serif;
+  position: relative;
+}
+
+.font-grotesk { font-family: "Cabinet Grotesk", sans-serif; }
+.font-datamono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+
+/* Hide native cursor only when the landing custom cursor is active */
+.landing-cursor-none,
+.landing-cursor-none a,
+.landing-cursor-none button,
+.landing-cursor-none [role="button"] { cursor: none; }
+
+/* ---------- ambient field: blueprint grid + grain ---------- */
+
+.lc-grid-field {
+  position: fixed;
+  inset: -10vh 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--lc-gridline) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--lc-gridline) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.35;
+  will-change: transform;
+}
+.lc-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@media (max-width: 767px) {
+  .lc-grain { opacity: 0.02; }
+}
+
+/* ---------- overlines & captions ---------- */
+
+.lc-overline {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--lc-text-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.lc-overline::before {
+  content: "";
+  width: 24px;
+  height: 1px;
+  background: var(--lc-acid);
+  flex: none;
+}
+.lc-caption {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- type scale ---------- */
+
+.lc-display {
+  font-family: "Cabinet Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.75rem, 7.5vw, 6.25rem);
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  color: #fff;
+}
+.lc-section-title {
+  font-family: "Cabinet Grotesk", sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.875rem, 4.5vw, 3.5rem);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.lc-intro {
+  font-family: "Cabinet Grotesk", sans-serif;
+  font-weight: 500;
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  line-height: 1.7;
+  color: var(--lc-text-2);
+  max-width: 34rem;
+}
+.lc-acid { color: var(--lc-acid); }
+.lc-cyan { color: var(--lc-cyan); }
+
+/* ---------- buttons ---------- */
+
+.lc-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 2rem;
+  border-radius: 999px;
+  background: var(--lc-acid);
+  color: var(--lc-on-acid);
+  font-family: "Cabinet Grotesk", sans-serif;
+  font-weight: 800;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  border: none;
+  position: relative;
+  transition: transform 0.2s ease-out;
+}
+@media (min-width: 768px) {
+  .lc-btn-primary { height: 3.5rem; font-size: 1rem; }
+}
+.lc-btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 24px var(--lc-acid-glow);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+  pointer-events: none;
+}
+.lc-btn-primary:hover { transform: translateY(-1px); }
+.lc-btn-primary:hover::after { opacity: 1; }
+.lc-btn-primary:active { transform: translateY(0) scale(0.97); }
+.lc-btn-primary:focus-visible { outline: 2px solid var(--lc-acid); outline-offset: 2px; }
+.lc-btn-primary:disabled { opacity: 0.4; transform: none; cursor: not-allowed; }
+.lc-btn-primary:disabled::after { opacity: 0; }
+
+.lc-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  font-family: "Cabinet Grotesk", sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  background: transparent;
+  transition: border-color 0.2s ease-out, background 0.2s ease-out, color 0.2s ease-out;
+}
+@media (min-width: 768px) {
+  .lc-btn-ghost { height: 3.5rem; }
+}
+.lc-btn-ghost:hover { border-color: rgba(255, 255, 255, 0.35); color: #fff; background: rgba(255, 255, 255, 0.05); }
+.lc-btn-ghost:active { transform: scale(0.97); }
+.lc-btn-ghost:focus-visible { outline: 2px solid var(--lc-acid); outline-offset: 2px; }
+
+/* ---------- cards & modules ---------- */
+
+.lc-card {
+  background: var(--lc-panel);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  transition: background 0.25s var(--lc-ease-expo), border-color 0.25s var(--lc-ease-expo), transform 0.25s var(--lc-ease-expo);
+}
+.lc-card[data-interactive="true"]:hover {
+  background: var(--lc-raised);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* corner brackets — the signature HUD detail */
+.lc-brackets { position: relative; }
+.lc-brackets::before,
+.lc-brackets::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+.lc-brackets::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+.lc-brackets::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* ---------- loader ---------- */
+
+.lc-loader-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--lc-void);
+}
+.lc-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.1em;
+  background: var(--lc-acid);
+  vertical-align: text-bottom;
+  animation: lc-caret-blink 0.9s steps(1) infinite;
+}
+@keyframes lc-caret-blink {
+  50% { opacity: 0; }
+}
+
+/* ---------- custom cursor ---------- */
+
+.lc-cursor-dot,
+.lc-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 110;
+  border-radius: 999px;
+}
+.lc-cursor-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--lc-acid);
+}
+.lc-cursor-ring {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- nav underline wipe ---------- */
+
+.lc-nav-link {
+  position: relative;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  transition: color 0.2s ease-out;
+}
+.lc-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  bottom: 8px;
+  width: 12px;
+  height: 1px;
+  background: var(--lc-acid);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.18s var(--lc-ease-expo);
+}
+.lc-nav-link:hover { color: #fff; }
+.lc-nav-link:hover::after { transform: scaleX(1); }
+.lc-nav-link:focus-visible { outline: 2px solid var(--lc-acid); outline-offset: 2px; }
+
+/* ---------- pipeline ---------- */
+
+.lc-packet {
+  fill: var(--lc-acid);
+}
+.lc-packet-echo {
+  fill: var(--lc-cyan);
+  opacity: 0.4;
+}
+
+.lc-chip-scroll {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+}
+.lc-chip-scroll::-webkit-scrollbar { display: none; }
+.lc-chip-scroll > * { scroll-snap-align: start; flex: none; }
+
+.lc-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  transition: color 0.2s ease-out, border-color 0.2s ease-out, background 0.2s ease-out;
+}
+.lc-chip:hover { border-color: rgba(255, 255, 255, 0.3); color: #fff; }
+.lc-chip[aria-pressed="true"] {
+  background: var(--lc-acid);
+  border-color: var(--lc-acid);
+  color: var(--lc-on-acid);
+}
+.lc-chip:focus-visible { outline: 2px solid var(--lc-acid); outline-offset: 2px; }
+
+/* ---------- misc motion helpers ---------- */
+
+.lc-anchor { scroll-margin-top: 88px; }
+
+.lc-status-ticker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lc-caret { animation: none; opacity: 1; }
+  .lc-card, .lc-btn-primary, .lc-btn-ghost, .lc-chip, .lc-nav-link::after {
+    transition: none;
+  }
+}

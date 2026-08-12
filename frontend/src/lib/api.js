@@ -1,13 +1,17 @@
 import axios from "axios";
 
-const BACKEND = process.env.REACT_APP_BACKEND_URL;
+const BACKEND = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 export const API = `${BACKEND}/api`;
 
 // derive websocket base
 export const WS_BASE = (() => {
-  const url = new URL(BACKEND);
-  const proto = url.protocol === "https:" ? "wss:" : "ws:";
-  return `${proto}//${url.host}/api/ws`;
+  try {
+    const url = new URL(BACKEND);
+    const proto = url.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${url.host}/api/ws`;
+  } catch {
+    return "ws://localhost:8000/api/ws";
+  }
 })();
 
 const http = axios.create({ baseURL: API, timeout: 60000 });

@@ -21,3 +21,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# npm lockfile (repo installs with yarn)
+package-lock.json
