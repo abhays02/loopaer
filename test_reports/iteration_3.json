@@ -1,0 +1,36 @@
+{
+  "summary": "Iteration 3 all four features verified end-to-end. Backend: 9/9 pytest green (text index on db.memory named 'memory_fulltext' exists; recall returns normalized scores in [0,1]; short/empty query fallback works; TokenStreamed events emitted for research (326) and verification (347) loops on sess_2b8612b152 in addition to planner (198); /api/sessions/{sid}/tree returns 59-node tree with kinds search/extract/verify/synthesize/iteration/fact/entity/gap and 404 for unknown session; rehydrate top-up confirmed by inserting 2 events with higher seq directly into db.events — subsequent GET /events returned them). Frontend: /runtime/sess_2b8612b152 loads, all 6 tabs (plan/tree/knowledge/confidence/skill/replay) render, Reasoning tab shows 'Reasoning Tree · 59 nodes · depth 3', 23 confidence pills on fact nodes, structure sidebar (leaves 53, depth 3) and full legend (SEARCH/EXTRACT/VERIFY/SYNTH/ITER/FACT/ENT/GAP) render, chevron collapse 59→1 and re-expand 1→59 work with framer-motion layout animation, no errors when cycling through the other 5 tabs.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Reasoning tab — root tree row", "issues": ["Root node has no 'kind' field in runtime.py so the row's data-testid renders as 'tree-row-undefined' (cosmetic — functionality unaffected; consider seeding session.reasoning_tree with kind='root' in Session.__init__)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/tests/test_iteration_3.py",
+    "/app/test_reports/pytest/iteration_3_results.xml"
+  ],
+  "action_items": [
+    "Optional cosmetic: set session.reasoning_tree kind='root' in runtime.py Session.__init__ so the top row renders data-testid=\"tree-row-root\" instead of tree-row-undefined (matches KIND_META.root icon/color)."
+  ],
+  "critical_code_review_comments": [
+    "memory.py:69-93 — text-index recall + fallback layered cleanly. Max-normalization to [0,1] via `mx = max(scores)` is correct and stable. The `filter_['session_id'] = {'$ne': exclude_session}` on the $text query works because Mongo lets you combine $text with other filters in the same $and.",
+    "eventbus.py:72-94 — rehydrate(force=False) correctly checks `buf_len >= mongo_count` before short-circuiting and rebuilds the buffer from scratch when Mongo has more. However, the top-up replaces the buffer with the sorted Mongo docs; any in-memory-only events not yet persisted (during a brief race window) will not be preserved. In practice fine because emit() writes to Mongo synchronously in the same coroutine before returning.",
+    "runtime.py:178-211 — _stream_json emits TokenStreamed only when buffer of last 6 tokens > 24 chars, so token bursts are naturally batched. Fallback on stream failure → chat_json → JSON substring extraction → final chat_json retry is robust. Extract/verify now flow through the same helper.",
+    "runtime.py:414-422 — research iteration node grafting: finds an existing 'search' child or creates one lazily; this means the first-time-through the reasoning tree grows a 'research' child at run-time even though the planner emits child tasks with kind='search' — verified in real session: root has both a task 'search' node and a synthesized research subtree. Consider unifying to avoid duplicate roots.",
+    "ReasoningTree.jsx:17-34 — walkFlat uses a stack instead of recursion so unbounded tree depth won't stack-overflow the browser. Good.",
+    "ArtifactCanvas.jsx:11-18 — new 'tree' tab added between Plan and Knowledge; tab-underline animation is shared across all tabs via `layoutId=\"tab-underline\"` so switching feels smooth."
+  ],
+  "updated_files": [
+    "/app/tests/test_iteration_3.py (new — 9 pytest tests, ~1s runtime)"
+  ],
+  "success_rate": { "backend": "100% (9/9 iteration 3 tests)", "frontend": "100% — all iteration 3 UI flows pass" },
+  "test_credentials": "No auth. OPENROUTER_API_KEY already in backend/.env.",
+  "seed_data_creation": "1 TEST_ITER3_ session created (sess_d28dd29ad4, goal 'TEST_ITER3_rehydrate topup vector databases'). Two synthetic events were inserted into db.events with seq>>max during the rehydrate top-up test and deleted afterward in a finally block. MongoDB state: 14 sessions, ~2247 events, 62 memory items, memory_fulltext + session_id_1 + kind_1 indexes on db.memory.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 3 test file at /app/tests/test_iteration_3.py — runs in ~1s because it reuses sess_2b8612b152 (rich 59-node pipeline) instead of driving a fresh full pipeline. Rehydrate top-up test creates ONE fresh session and awaits >=5 planner events (~5-15s worst case). If sess_2b8612b152 is ever deleted, the tests using RICH_SID will fail — run a full /run-all pipeline against any goal to seed a new one first. Reasoning tab renders reliably at /runtime/{sid}; use data-testid='tab-tree' and '[data-testid^=\"tree-row-\"]' for row selection. Chevron button lives inside first row that has children — the ROOT row also has children so clicking its chevron collapses everything to 1 row.",
+  "rca of the issue": "N/A — no bugs found in iteration 3 features. Only cosmetic note: session.reasoning_tree is initialized without kind field so the root row surfaces as data-testid='tree-row-undefined' in the DOM (KIND_META fallback still renders label as 'ITER' via the default). No user-facing impact."
+}

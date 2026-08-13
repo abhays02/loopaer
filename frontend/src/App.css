@@ -1,0 +1,26 @@
+/* Route-level shell */
+.workbench {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 56px 1fr;
+  grid-template-columns: 300px 1fr 340px;
+  grid-template-areas:
+    "top    top     top"
+    "left   center  right";
+  gap: 12px;
+  padding: 12px;
+  background: #050505;
+  position: relative;
+  z-index: 2;
+}
+
+.workbench > .region-top { grid-area: top; }
+.workbench > .region-left { grid-area: left; overflow: hidden; }
+.workbench > .region-center { grid-area: center; overflow: hidden; position: relative; }
+.workbench > .region-right { grid-area: right; overflow: hidden; }
+
+@media (max-width: 1180px) {
+  .workbench {
+    grid-template-columns: 240px 1fr 300px;
+  }
+}

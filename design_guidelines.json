@@ -1,0 +1,503 @@
+{
+  "theme": "dark",
+  "archetype": "ELECTRIC & NEON / THE PERFORMANCE PRO HYBRID",
+  "spec_version": "2.0 — adds the marketing Command Center surface (sections landing_* below); runtime workbench sections above the divider remain the source of truth for authenticated pages",
+  "typography": {
+    "headings": {
+      "font_family": "Cabinet Grotesk, General Sans, sans-serif",
+      "weights": ["light", "black", "extrabold"],
+      "tracking": "tracking-tight or tracking-tighter",
+      "line_height": "leading-none",
+      "usage": "Bold animated typography, big kinetic hero moments, loop statuses, main panel titles. Do not use Inter or Space Grotesk."
+    },
+    "body": {
+      "font_family": "JetBrains Mono, Berkeley Mono, monospace",
+      "weights": ["regular", "medium"],
+      "tracking": "tracking-normal",
+      "line_height": "leading-relaxed",
+      "usage": "Event stream rail, code snippets, tool inputs, metadata, and data-heavy tables. Monospace gives it an OS/workbench feel."
+    },
+    "labels": {
+      "styling": "uppercase, text-xs, tracking-[0.2em], font-medium text-neutral-500",
+      "usage": "Overlines, tags, status pills, memory nodes, panel headers."
+    }
+  },
+  "colors": {
+    "base": {
+      "background": "#050505",
+      "panel_bg": "#0A0A0A",
+      "border": "rgba(255, 255, 255, 0.08)",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "rgba(255, 255, 255, 0.6)"
+    },
+    "accent": {
+      "primary": "#D4FF00",
+      "primary_glow": "rgba(212, 255, 0, 0.3)",
+      "secondary": "#00E5FF",
+      "description": "Electric Acid Green. Signals 'alive and thinking'. Highly kinetic and cognitive. Contrast heavily against dark void base. Avoid purple/violet AI-slop."
+    },
+    "states": {
+      "success": "#D4FF00",
+      "error": "#FF3B30",
+      "warning": "#FF9F0A",
+      "info": "#00E5FF",
+      "hover": "rgba(255, 255, 255, 0.12)"
+    }
+  },
+  "visual_enhancers": {
+    "liquid_glass": {
+      "background": "rgba(10, 10, 10, 0.4)",
+      "backdrop_filter": "blur(16px) saturate(180%)",
+      "border": "1px solid rgba(255, 255, 255, 0.1)",
+      "box_shadow": "inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.4)",
+      "usage": "Used for floating controls, bottom dock, model switcher, and overlay panels (Dock.cool style)."
+    },
+    "textures": {
+      "noise": "Subtle grain texture overlaid on panels via background-image to remove flat digital sterility. Adds 'nominal' tactile feel."
+    },
+    "borders": {
+      "radius": {
+        "outer": "rounded-2xl",
+        "inner": "rounded-lg",
+        "pill": "rounded-full"
+      },
+      "style": "Sharp 1px semi-transparent borders (border-white/10). No soft muddy shadows."
+    },
+    "cursor": {
+      "style": "Custom animated geometric cursor (using framer-motion) that reacts to hover states (e.g., expands on interactive elements)."
+    }
+  },
+  "layouts": {
+    "overall_structure": "Hybrid Fullstack Workbench / OS Dashboard. 100vh, hidden main scrollbar. Heavy reliance on independent panel scrolling.",
+    "regions": {
+      "left_rail": "Loop tree and navigation (Knowledge Graph shortcuts, Planner tree). Width: ~280px.",
+      "right_rail": "Live Event Bus stream. width: ~320px. Monospaced cascading feed of events.",
+      "center_canvas": "Dynamic Artifact Renderer. Wide workspace for algorithms, architecture viewer, comparison matrices.",
+      "bottom_dock": "Floating liquid-glass dock centered at bottom. Contains Model Switcher, play/pause/branch, intervention input. Z-index 50."
+    },
+    "spacing": "Extreme confidence in whitespace. Generous padding in center canvas (p-12 to p-24). Tight data density in side panels (p-4, gap-2)."
+  },
+  "grids": {
+    "bento": "High density grid for Memory Browser and Skill Generator (grid-cols-2 md:grid-cols-4, gap-4). Fill items h-full.",
+    "timeline": "Linear tracking row for Research Timeline scrubber, horizontal overflow hidden, custom scrollbar."
+  },
+  "components": {
+    "buttons": "Pill-shaped (rounded-full) or sharp structural (rounded-none). Accent buttons must glow on hover.",
+    "panels": "Dark solid base (bg-[#0A0A0A]) with 1px border-white/10. No glassmorphism here, to preserve data legibility. Glass is only for floating docks.",
+    "event_stream": "Cascading feed. Use Framer Motion (layout, initial, animate) for items sliding in with spring physics.",
+    "confidence_meter": "Animated SVG ring/bar with glow drop-shadow matching confidence level. Color shifts from warning (orange) to success (acid green).",
+    "model_switcher": "Liquid animation toggle pill in the dock. Spring physics to snap between Llama/Claude/GPT.",
+    "shadcn_overrides": "Use Shadcn purely for behavior (Dropdown, Tooltips, Dialogs) but strip generic styling. Apply liquid glass to Tooltip/Dropdown content wrappers."
+  },
+  "motion": {
+    "physics": "Spring physics for drags/hovers (stiffness: 300, damping: 25). Avoid linear easing.",
+    "reveals": "Staggered panel reveals on mount.",
+    "data_viz": "Connections drawing between graph nodes (stroke-dasharray animation). Loop status pulsing.",
+    "hover_states": "Tactile depth. Glossy highlights passing over the liquid-glass dock items on hover."
+  },
+  "3d_and_data_libraries": {
+    "graph_viz": "React Flow or Visx for Knowledge Graph and Reasoning Tree (interactive nodes, custom edges).",
+    "motion": "Framer Motion for layout transitions, Event Bus item sliding, and custom cursor.",
+    "scrollytelling": "Not applicable to the runtime workbench (fixed 100vh). Use D3/Visx for Artifact Canvas rendering. Scrollytelling applies only to the marketing landing — see landing_motion_spec."
+  },
+  "image_urls": {
+    "dark_liquid_abstract": [
+      {
+        "url": "https://images.unsplash.com/photo-1584968124544-d10ce10dd21f",
+        "description": "Dark blue/black liquid abstract for possible hero/login overlay."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1604871000636-074fa5117945",
+        "description": "Abstract fluid paint, usable for dynamic artifact backgrounds if darkened via overlay."
+      }
+    ],
+    "textures": [
+      {
+        "url": "https://images.pexels.com/photos/18599094/pexels-photo-18599094.jpeg",
+        "description": "Grainy black and white abstract texture. Use as a fixed background layer with opacity 0.03 to create tactile 'nominal' noise."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1578662996442-48f60103fc96",
+        "description": "Black and white photo of a dark background for subtle depth."
+      }
+    ]
+  },
+  "accessibility": {
+    "contrast": "Maintain APCA minimums. Use text-white for primary, text-white/60 for secondary. Acid green on dark bg ensures extreme contrast.",
+    "motion": "Respect prefers-reduced-motion media query by snapping state transitions instead of springing.",
+    "test_ids": "Include data-testid kebab-case attributes on all dock controls, event bus items, and loop inspector actions."
+  },
+  "landing_design_system": {
+    "scope": "The marketing Command Center experience at '/' (loader, header, six sections, footer). Extends — never contradicts — the tokens above. Runtime pages are unaffected.",
+    "positioning": "An AI Command Center: calm authority, not neon spectacle. Signal color is rationed; darkness, hairlines, and whitespace carry the premium feel.",
+    "typography_scale": {
+      "display_hero": {
+        "family": "Cabinet Grotesk extrabold",
+        "size": "clamp(2.75rem, 7.5vw, 6.25rem)",
+        "tracking": "-0.03em",
+        "line_height": "0.98",
+        "note": "Set in solid white. Never gradient text. One accent word may carry the acid color."
+      },
+      "section_title": {
+        "family": "Cabinet Grotesk black",
+        "size": "clamp(1.875rem, 4.5vw, 3.5rem)",
+        "tracking": "-0.02em",
+        "line_height": "1.05"
+      },
+      "section_intro": {
+        "family": "Cabinet Grotesk medium",
+        "size": "clamp(1rem, 1.4vw, 1.25rem)",
+        "line_height": "1.7",
+        "color": "rgba(255,255,255,0.62)",
+        "max_width": "34rem",
+        "note": "Deliberate deviation from the workbench: long-form reading copy on the landing uses Cabinet Grotesk for comfort; JetBrains Mono is reserved for overlines, data, captions, and terminal-styled fragments."
+      },
+      "overline": {
+        "family": "JetBrains Mono medium",
+        "size": "0.6875rem (11px)",
+        "tracking": "0.24em",
+        "transform": "uppercase",
+        "color": "rgba(255,255,255,0.45)",
+        "note": "Prefixed with a 24px hairline rule in acid when paired with a section title."
+      },
+      "data_caption": {
+        "family": "JetBrains Mono regular",
+        "size": "0.75rem",
+        "line_height": "1.6",
+        "color": "rgba(255,255,255,0.5)",
+        "usage": "Pipeline node labels, metric captions, footer fine print."
+      }
+    },
+    "color_system": {
+      "surfaces": {
+        "void": "#050505 — page background, never a gradient",
+        "panel": "#0A0A0A — cards and embedded modules",
+        "panel_raised": "#101010 — hovered or focused modules",
+        "hairline": "rgba(255,255,255,0.08) — borders; rgba(255,255,255,0.05) for structural grid lines"
+      },
+      "signal": {
+        "acid": "#D4FF00 — live states, primary CTA, progress. Rationed: at most 5% of any viewport",
+        "acid_glow": "rgba(212,255,0,0.25) — hover glow only, blur 24px",
+        "cyan": "#00E5FF — secondary signal: data links, info states, pipeline highlight on focus",
+        "rule": "Acid and cyan never appear together in the same headline or button. Acid = action and life; cyan = information and connection."
+      },
+      "text": {
+        "primary": "#FFFFFF",
+        "secondary": "rgba(255,255,255,0.62)",
+        "tertiary": "rgba(255,255,255,0.4)",
+        "on_acid": "#050505"
+      },
+      "states": {
+        "success": "#D4FF00",
+        "error": "#FF3B30",
+        "warning": "#FF9F0A",
+        "info": "#00E5FF"
+      },
+      "depth_via_luminance": "Depth comes from stepped surface colors (void -> panel -> raised) plus 1px hairlines — not from shadows and not from dark gradients. Glow is reserved for acid signal elements only."
+    },
+    "spacing_and_rhythm": {
+      "base_unit": "4px (Tailwind default)",
+      "content_container": "max-w-[1200px] mx-auto px-6 md:px-10",
+      "section_padding_y": {
+        "mobile": "py-20 (80px)",
+        "desktop": "py-32 lg:py-40 (128–160px)",
+        "note": "Hero gets min-h-[100svh] instead of vertical padding."
+      },
+      "element_gaps": {
+        "within_module": "gap-4",
+        "between_modules": "gap-6 md:gap-8",
+        "title_to_body": "mt-6",
+        "overline_to_title": "mb-5"
+      },
+      "asymmetry_rule": "Alternate alignment by section: hero left-aligned, intelligence layer full-bleed, pillars offset 1-column right, use cases full grid, outcomes split 7/5, CTA centered. Never repeat the same centered headline-subtitle-CTA stack twice."
+    },
+    "depth_and_layers": {
+      "z_stack": {
+        "ambient_field": "z-0 — faint blueprint grid (1px lines, rgba(255,255,255,0.03), 64px cells) plus grain at 0.03 opacity; fixed, non-interactive",
+        "content": "z-10",
+        "sticky_module": "z-20 — pipeline diagram when pinned",
+        "glass_overlay": "z-30 — tooltips, mobile menu sheet",
+        "header": "z-40",
+        "loader": "z-100",
+        "custom_cursor": "z-[110]"
+      },
+      "signature_detail": "Corner brackets: 12px L-shaped hairlines in rgba(255,255,255,0.25) on two corners of key modules (hero centerpiece, pipeline frame, CTA card). A quiet HUD cue that recurs nowhere else.",
+      "ambient_parallax": "The grid field and grain move at 0.05–0.08 of scroll velocity; sections scroll normally over them."
+    },
+    "landing_components": {
+      "button_primary": {
+        "style": "rounded-full, bg-[#D4FF00] text-[#050505], Cabinet Grotesk extrabold, text-sm md:text-base, px-8 h-12 md:h-14",
+        "hover": "box-shadow 0 0 24px rgba(212,255,0,0.25); translate-y -1px; duration 200ms ease-out",
+        "active": "scale 0.97 via snappy spring; glow contracts",
+        "focus_visible": "2px acid outline, 2px offset"
+      },
+      "button_ghost": {
+        "style": "rounded-full, border border-white/15 text-white/80, h-12 md:h-14 px-6",
+        "hover": "border-white/35 text-white bg-white/5",
+        "active": "scale 0.97"
+      },
+      "card": {
+        "style": "bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 md:p-8",
+        "hover": "bg-[#101010] border-white/15; translate-y -2px; 250ms cubic-bezier(0.16,1,0.3,1)",
+        "rule": "Cards never glow. Glow belongs to live signal elements only."
+      },
+      "nav_link": {
+        "style": "JetBrains Mono 12px uppercase tracking 0.18em text-white/50; min touch target 44px via padding",
+        "hover": "text-white; a 12px acid underline wipes in from the left"
+      },
+      "focus_visibility": "Every interactive element shows a 2px #D4FF00 focus-visible outline at 2px offset. Focus rings are never removed."
+    }
+  },
+  "landing_motion_spec": {
+    "principles": [
+      "Motion explains causality: things enter from where they logically come from and exit where they go.",
+      "One kinetic protagonist per viewport. The loader owns arrival; the pipeline owns the middle; counters and cards stay quiet around them.",
+      "Compositor-only properties: animate transform, opacity, and filter only. Never animate width, height, top, left, or box-shadow directly (fake glow with opacity on a pre-rendered shadow element).",
+      "Nothing waits on motion: content is interactive the instant it exists; animation never gates a click."
+    ],
+    "physics": {
+      "spring_snappy": { "stiffness": 400, "damping": 30, "usage": "buttons, cursor ring, toggles" },
+      "spring_standard": { "stiffness": 300, "damping": 25, "usage": "cards, menus, pipeline node focus" },
+      "spring_soft": { "stiffness": 120, "damping": 20, "usage": "scroll reveals, parallax layers" },
+      "ease_expo_out": "cubic-bezier(0.16, 1, 0.3, 1) — all opacity/translate reveals",
+      "ease_in_out": "cubic-bezier(0.65, 0, 0.35, 1) — loader progress, section wipes",
+      "rule": "No linear easing anywhere except the pipeline packet loop, which is deliberately mechanical."
+    },
+    "loading_sequence": {
+      "budget": "1.2s total on desktop, hard cap 3s on throttled mobile (AC-2); skippable by tap; skipped entirely under prefers-reduced-motion (0.3s static fade instead)",
+      "choreography": [
+        { "t": "0ms", "event": "Void background with mono overline 'LOOPAER // COMMAND CENTER' typewriter-in, 14ms per glyph, caret blink" },
+        { "t": "250ms", "event": "Wordmark letters mask-reveal: each letter translates y 100% to 0 inside an overflow-hidden line, 40ms stagger, 500ms expo-out" },
+        { "t": "600ms", "event": "A 1px acid rule draws left-to-right beneath the wordmark (600ms ease-in-out), ending in a small terminal tick" },
+        { "t": "900ms", "event": "Loader veil (opacity 1 to 0, 250ms) lifts while the hero headline words stagger in from below; header slides down 12px and fades in" },
+        { "t": "1200ms", "event": "Loader node removed from DOM; page fully interactive" }
+      ],
+      "implementation": "Render the loader as a sibling overlay, not a gate on data fetching. Section content mounts underneath immediately; only its reveal animations wait. If fonts are not ready by t=0, run the sequence with system fallback and swap silently.",
+      "reduced_motion_fallback": "Static wordmark + overline fade in over 300ms; no typewriter, no rule draw."
+    },
+    "cursor_and_pointer": {
+      "availability": "Fine pointers only — enable behind matchMedia('(pointer: fine)') and width >= 1024; never on touch devices, where it would fight native scrolling",
+      "composition": "8px solid acid dot plus a 32px 1px ring at rgba(255,255,255,0.5)",
+      "behavior": [
+        "Dot tracks pointer 1:1; ring follows on spring_standard",
+        "Over interactive elements: ring expands to 44px, opacity rises to 0.9",
+        "Over text: ring contracts to 4px tall bar",
+        "On press: ring scales to 0.8, dot brightens",
+        "Idle 4s: ring fades to 0.25 opacity; returns on move"
+      ],
+      "magnetic_targets": "Primary CTA and pipeline nodes pull up to 6px toward the pointer inside a 56px field; spring_snappy; no magnetism on mobile"
+    },
+    "hover_and_click_microinteractions": {
+      "cards": "250ms lift + border brighten (see landing_components.card); inner icon rotates 6 degrees",
+      "use_case_chips": "background wipes from left with white/5, 200ms",
+      "links": "12px acid underline wipe, 180ms",
+      "click_ripple_rule": "No material-style ripples. Press feedback is scale + a 120ms brightness pulse only.",
+      "differentiation_rule": "Each pillar card gets one unique micro-interaction (e.g. live ticker, ring fill, toggle flip, edge draw); never the same hover on two adjacent modules."
+    },
+    "button_feedback": {
+      "hover": "translate-y -1px; primary gains 24px acid glow; ghost gains white/5 fill",
+      "press": "scale 0.97 on spring_snappy; release overshoots to 1.0 by 3%",
+      "disabled": "opacity 0.4, no hover transform, cursor not-allowed",
+      "loading": "Label cross-fades to a mono status word (e.g. 'OPENING'); a 14px acid arc spinner sits left of it"
+    },
+    "scroll_reveals": {
+      "trigger": "IntersectionObserver, threshold 0.15, rootMargin '0px 0px -10% 0px', once: true",
+      "default_reveal": "opacity 0 to 1, translateY 24px to 0, 600ms ease_expo_out",
+      "masked_text_reveal": "Headlines split into lines, each line inside overflow-hidden, y 100% to 0, 700ms, 80ms stagger",
+      "stagger_children": "80ms between siblings, max total stagger 400ms",
+      "parallax_cap": "Ambient layers only, factor 0.05–0.08, transform-only, disabled under reduced motion",
+      "offscreen_hygiene": "Canvases and looping animations unmount or pause when offscreen for more than 2 viewports and on document.visibilitychange hidden"
+    },
+    "pipeline_centerpiece": {
+      "structure": "SVG flow diagram: source -> intake -> agents -> memory -> outcome nodes as glass panels, edges as 1.5px paths",
+      "entry": "When section reaches 30% viewport: edges draw via stroke-dashoffset over 1.2s with 150ms stagger along flow order, then nodes pop in (scale 0.96 to 1, 300ms spring_standard)",
+      "ambient_loop": "Acid packet dots travel the paths on linear timing, 3s per lap, staggered starts; a faint cyan echo follows at 40% opacity",
+      "pointer_interaction": "Hover or tap a node: connected edges lift to cyan, all other edges dim to 30% opacity, a glass tooltip panel opens beside the node with a mono caption; 200ms transitions",
+      "touch_interaction": "Tap toggles node focus; tapping the diagram background clears focus; every node hit-area is at least 44x44px",
+      "reduced_motion_fallback": "Diagram renders fully drawn on entry; packets hidden; focus highlighting stays as an instant state change"
+    },
+    "reduced_motion_contract": "Under prefers-reduced-motion: reduce — every entrance becomes an instant or 200ms opacity fade; loops (packets, caret, pulses) stop; parallax and magnetism disabled; the loader is skipped. Functionality is identical (AC-8)."
+  },
+  "landing_page_layouts": {
+    "header": {
+      "desktop": "fixed, h-16, flex justify-between, px-10 inside max-w-[1200px]; left: wordmark in Cabinet Grotesk extrabold; center: 4 mono nav links; right: ghost 'Sign in' + primary 'Start a consultation' (compact h-10). Liquid-glass background rgba(10,10,10,0.6) blur(16px) appears only after 24px of scroll.",
+      "mobile": "h-14, px-5; wordmark left; single 44px menu button right opening a full-screen liquid-glass sheet with 48px-tall links and both CTAs; sheet animates y -16px fade, 250ms expo-out"
+    },
+    "section_0_loader": { "layout": "Full-viewport fixed overlay; content vertically centered but horizontally left-aligned at the content container edge — the loader inherits the page's left alignment to avoid a generic centered splash." },
+    "section_1_hero": {
+      "desktop": "min-h-[100svh]; left-aligned block in the content container: overline, 2–3 line kinetic headline, one intro paragraph max-w-[34rem], two CTAs (primary + ghost) side by side. Right 45% hosts the lazy-loaded three.js centerpiece (orbiting pipeline ring). Bottom edge: a mono status strip (system nominal line) that types in once.",
+      "mobile": "Single column; headline first, intro, full-width stacked CTAs (h-12, gap-3); the 3D scene downgrades to a lightweight animated SVG ring behind the text at reduced opacity; status strip at bottom",
+      "note": "Left alignment and the status strip are the deliberate anti-template moves."
+    },
+    "section_2_intelligence_layer": {
+      "desktop": "Full-bleed section. Overline + title left-aligned top. The pipeline centerpiece spans the container width (sticky within a 150vh scroll region so edges finish drawing while text beside it advances). Caption row of mono node labels under the diagram.",
+      "mobile": "Diagram becomes horizontally scrollable (scroll-snap, native momentum) at a 4:3 aspect card; node labels wrap into a legend below; sticky behavior disabled"
+    },
+    "section_3_pillars": {
+      "desktop": "12-column grid; title block columns 1–5; pillar modules columns 6–12 in a staggered 2-column arrangement with 32px vertical offsets — not a uniform row. Each module gets its unique micro-interaction per landing_motion_spec.",
+      "mobile": "Single column, full-width modules, reveal stagger 80ms"
+    },
+    "section_4_use_cases": {
+      "desktop": "Filter row of mono pill chips (h-10, gap-2, wrap) then a 3-column card grid (gap-6). Card: mono function tag, Cabinet Grotesk title, 2-line description, arrow link. Filtering animates with layout springs (framer-motion layout).",
+      "mobile": "Filter chips become a horizontally scrolling row with snap and edge fade; cards stack 1-column; tap opens an in-place expansion (height spring) rather than a new route"
+    },
+    "section_5_outcomes": {
+      "desktop": "Split 7/5: left holds qualitative outcome statements as masked-text reveals; right holds one animated diagram (self-drawn lines and our own placeholder figures only — per brief section 7 decision: qualitative first, no competitor numbers).",
+      "mobile": "Stacked; diagram below statements"
+    },
+    "section_6_consultation_cta": {
+      "desktop": "Centered closing card inside the container: overline, one-sentence invitation, single primary CTA, mono reassurance line beneath (e.g. response time). Corner brackets frame the card. CTA connects to the existing consultation flow.",
+      "mobile": "Full-width card, px-5, CTA full-width h-14"
+    },
+    "footer": {
+      "desktop": "border-t white/10; three columns: wordmark + one line; mono nav; mono legal. py-12.",
+      "mobile": "Single column stack, 44px tap targets, py-10"
+    }
+  },
+  "responsive_rules": {
+    "breakpoints": { "base": "360px (design floor)", "sm": "640px", "md": "768px", "lg": "1024px", "xl": "1280px" },
+    "touch": [
+      "Every interactive target is at least 44x44 CSS px (AC-4), achieved via padding, not by enlarging visuals",
+      "No hover-only interactions: anything revealed on hover is also reachable by tap or is visible by default",
+      "Spacing between adjacent targets at least 8px to prevent mis-taps",
+      "Custom cursor, magnetism, and pointer parallax are disabled whenever (pointer: coarse)"
+    ],
+    "viewport_hygiene": [
+      "Use 100svh (fallback 100vh) for the hero so mobile browser chrome never clips CTAs",
+      "No horizontal page overflow at any width; internal horizontal scroll is snap-contained",
+      "Fluid type via clamp() instead of breakpoint jumps wherever the scale table defines a clamp"
+    ],
+    "feature_downgrades": [
+      "three.js hero scene: lazy-loaded only after first paint; replaced by the SVG ring under (pointer: coarse) + small screens, or when deviceMemory < 4",
+      "Grain texture: opacity reduced to 0.02 on mobile to save compositing cost",
+      "Sticky pipeline region: disabled below lg"
+    ]
+  },
+  "performance_budget": {
+    "targets": {
+      "first_contentful_paint": "< 2.5s on mid-range phone profile with 4G throttling (AC-9)",
+      "time_to_interactive": "< 4s same profile",
+      "total_javascript": "<= 350KB gzipped including third-party (AC-9)",
+      "cumulative_layout_shift": "< 0.05",
+      "lighthouse_performance": ">= 90 mobile"
+    },
+    "allocation_guidance": {
+      "react_router_radix_core": "~150KB gz target",
+      "framer_motion": "Use LazyMotion + domAnimation and import 'm' — budget ~32KB gz, not the full package",
+      "three_js": "Lazy-loaded via React.lazy after first paint; excluded from the critical path; scene code + three budget ~120KB gz but loaded async and never counted against FCP"
+    },
+    "animation_costs": [
+      "Compositor-only animation (transform/opacity/filter); zero animated layout properties",
+      "One looping canvas max per viewport; loops pause when offscreen or tab hidden",
+      "backdrop-filter limited to header and menu sheet; never applied to full sections on mobile",
+      "will-change only on the actively animating element, removed on idle"
+    ],
+    "assets": [
+      "Fonts: self-hosted WOFF2 subsets, two families, at most 5 weights total, font-display: swap",
+      "Textures: inline or under 30KB each; no blocking remote images in critical sections",
+      "Remote image_urls from the workbench era are optional decor only and must load lazily"
+    ],
+    "measurement": "Verify with Lighthouse mobile + a performance trace per AC-2 and AC-9 before sign-off; CRA code-splitting limits are managed via craco and React.lazy boundaries."
+  },
+  "hand_drawn_readme_style": {
+    "concept": "The README reads like an engineer's field notebook: hand-drawn ink sketches on paper that explain the platform, with animation bringing the system loops to life. No emoji, no screenshots, no default markdown prose blocks beyond short captions.",
+    "stroke_style": {
+      "line_weight": "2px primary strokes; 1.25px for hatching and fine annotation",
+      "caps_and_joins": "stroke-linecap: round; stroke-linejoin: round",
+      "character": "Deliberate imperfection: corners overshoot by 2–4px, boxes sit at 0.5–1.5 degree tilts, long lines carry one gentle bow; use 2–3 point jitter on anchors. No perfect rectangles, no uniform dashes.",
+      "hatching": "Diagonal 45-degree hatch fills at 6px spacing for shaded areas, never solid fills except signal chips",
+      "arrowheads": "Open two-stroke arrowheads, 10px, slightly asymmetric"
+    },
+    "palette": {
+      "adaptation": "Each SVG carries an internal prefers-color-scheme media query so it renders correctly in both GitHub themes",
+      "light_theme": { "paper": "#FAFAF5", "ink": "#1A1A1A", "annotation": "#5A5A52", "signal": "#5A6B00 (acid darkened for contrast on paper)", "secondary": "#0E7C8C" },
+      "dark_theme": { "paper": "#0B0B0B", "ink": "#EDEDE6", "annotation": "rgba(237,237,230,0.55)", "signal": "#D4FF00", "secondary": "#00E5FF" },
+      "rule": "Signal color marks only live paths and key outcomes; everything else is ink and annotation."
+    },
+    "typography_in_sketches": {
+      "labels": "SVG text converted to outlined paths so GitHub renders them identically everywhere; hand-lettered style matching Cabinet Grotesk geometry",
+      "annotations": "System hand-style stack: font-family 'Segoe Print','Bradley Hand',cursive with monospace fallback; 13px minimum",
+      "captions": "Standard markdown italic line under each figure, mono-safe, sentence case"
+    },
+    "animation_rules": [
+      "CSS keyframes inside the SVG (no SMIL); every animation wrapped in @media (prefers-reduced-motion: no-preference)",
+      "Draw-in: stroke-dashoffset animation 2.4s ease-out, run once",
+      "Live loop: acid packet dot along the main data path, 3.2s linear infinite — mirrors the site pipeline loop for brand continuity",
+      "Pulse: key components breathe opacity 0.85 to 1 over 2s",
+      "GIF fallback allowed only where GitHub strips CSS animation; the GIF must keep the same palette and stroke rules",
+      "Total loop cost: each SVG under 120KB; prefer CSS over embedded scripts"
+    ],
+    "readme_layout": {
+      "order": [
+        "1. Wordmark sketch with one-line claim (hand-drawn logo, acid underline draw-in)",
+        "2. What it is: a single ink panel with three annotated lines",
+        "3. Architecture sketch: boxes for frontend, FastAPI runtime, MongoDB, websocket bus, LLM gateway; dashed connectors with open arrowheads; live path highlighted in signal",
+        "4. The loop: animated diagram of a pipeline cycle (plan, act, observe, remember) with the traveling packet",
+        "5. Stack badges: hand-drawn chips for React, FastAPI, MongoDB, websockets",
+        "6. Quick start: a sketched terminal window with outlined-lettering commands and a caret blink",
+        "7. Closing line and license note"
+      ],
+      "layout_rules": [
+        "Figures stack vertically, centered, max display width 900px, with one caption each",
+        "Whitespace between figures at least 48px rendered; sections divided by a short hand-drawn rule, not full-width <hr>",
+        "No figure depends on color alone; every live path also carries a dashed pattern",
+        "No emoji anywhere, including alt text"
+      ]
+    },
+    "file_conventions": {
+      "location": "assets/readme/*.svg (and *.gif fallbacks)",
+      "naming": "kebab-case: wordmark.svg, architecture.svg, the-loop.svg, stack-badges.svg, terminal.svg",
+      "viewbox": "0 0 900 N; stroke widths defined in viewBox units so scaling keeps weights consistent"
+    }
+  },
+  "implementation_fidelity_checklist": [
+    "All six sections render in order at 360px and desktop (AC-1)",
+    "Loader completes under 1.5s desktop / 3s throttled mobile and never gates content mounting (AC-2)",
+    "Pipeline animates on scroll entry and responds to pointer and touch (AC-3)",
+    "Every interactive target is >= 44x44px with >= 8px spacing; no hover-only behavior (AC-4)",
+    "Zero emoji in code, copy, comments, commits, and README assets (AC-5)",
+    "No competitor brands, metrics, or claims anywhere (AC-6)",
+    "No sentence survives verbatim from the old Landing.jsx (AC-7)",
+    "prefers-reduced-motion: reduce renders the full fallback contract; functionality unchanged (AC-8)",
+    "FCP under 2.5s and JS under 350KB gzipped on the phone profile (AC-9)",
+    "Backend surface untouched: no new endpoints consumed beyond existing public reads; static fallback renders when API unreachable (AC-10)",
+    "README replaced with hand-drawn animated visuals that render on GitHub in both themes (AC-11)",
+    "Commits authored as abhays02 with humanized messages (AC-12)",
+    "Color discipline: acid under 5% of viewport, no dark gradients, no purple/violet, cards never glow",
+    "Type discipline: solid white headlines (no gradient text), clamp() fluid sizes, mono reserved for overlines/data/captions",
+    "Motion discipline: compositor-only properties, spring presets from this spec, no linear easing except packet loops, one kinetic protagonist per viewport",
+    "Depth discipline: z-stack order respected; glass only on header/menu/tooltips; corner brackets only on the three designated modules",
+    "Cursor only on fine pointers >= 1024px; fully absent on touch",
+    "three.js lazy-loaded after first paint with SVG fallback; offscreen canvases paused or unmounted",
+    "Focus-visible acid ring present on every interactive element; keyboard order follows DOM order",
+    "Each pillar carries a distinct micro-interaction; no repeated card hover pattern",
+    "data-testid attributes in kebab-case on all landing CTAs, filters, pipeline nodes, and menu controls",
+    "Self-hosted font subsets with display swap; no blocking remote images above the fold"
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid the 'AI slop' aesthetic. Create creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy (Base -> Panels -> Liquid Glass Dock).",
+    "Use glass-morphism effects with backdrop filters (12-24px blur, rgba) ONLY for floating or overlay UI elements (dock, tooltips, dialogs). Data panels must be solid for legibility.",
+    "You MUST NOT apply universal transition. Eg: `transition: all`. Always add transitions for specific interactive elements.",
+    "You MUST NOT center align the app container. This disrupts the human natural reading flow of text.",
+    "Always use modern button styles like pill-shaped, or sharp buttons with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters for icons. Use Phosphor Icons or Lucide.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable in layout canvases. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations separate good from extraordinary.",
+    "Main agent MUST rely on the provided image URLs. NEVER use placeholder text for images.",
+    "Prioritize using pre-existing components from src/components/ui when applicable, but override their generic SaaS feel with extreme dark mode + acid green styling.",
+    "Use `sonner` for toasts. It is located in `/app/src/components/ui/sonner.tsx`."
+  ],
+  "instructions_to_main_agent": [
+    "Construct a 100vh app with a 3-column structural grid (Left Rail, Center Canvas, Right Rail) and a fixed Bottom Dock.",
+    "Ensure `data-testid` is added to all interactive elements, e.g. `data-testid='dock-model-switcher'`.",
+    "Leverage Framer Motion heavily for the Event Bus stream (animate items entering).",
+    "Use JetBrains Mono or similar for the Event stream and Code blocks. Use Cabinet Grotesk for the massive panel titles.",
+    "DO NOT use a transparent background in the header, overlays, or any surface that has content under it. Use Liquid Glass (blur + rgba) or solid colors.",
+    "Inject the noise texture URL via CSS background-image across the app background.",
+    "For the marketing landing at '/', follow landing_design_system, landing_motion_spec, landing_page_layouts, responsive_rules, and performance_budget; keep the workbench instructions above for runtime pages only."
+  ]
+}

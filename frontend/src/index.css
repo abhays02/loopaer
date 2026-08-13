@@ -1,0 +1,227 @@
+/* LOOPAER — global styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 3%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 40 100% 78%;              /* warm ivory highlight */
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 66 90% 60%;
+    --accent-foreground: 0 0% 6%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 100%;
+    --input: 0 0% 15%;
+    --ring: 40 100% 78%;
+    --radius: 1rem;
+    /* Warmer, more Apple-like palette */
+    --ink:   #0a0a0c;
+    --ink-2: #121216;
+    --acid:  #d9ff4d;         /* accent, used SPARINGLY */
+    --acid-glow: rgba(217,255,77,0.32);
+    --ivory: #f5efe0;         /* warm neutral highlight (SF-inspired) */
+    --cyan:  #7fdcff;
+    --amber: #ffb254;
+    --hot:   #ff4d6d;
+  }
+
+  * { border-color: hsl(var(--border) / 0.08); }
+  html, body { min-height: 100%; }
+  #root { min-height: 100vh; }
+  body {
+    background: var(--ink);
+    color: var(--ivory);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Neue Haas Grotesk Display Pro", "Söhne", "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  /* When runtime page is mounted, lock the viewport (workbench is its own scroll host) */
+  body.runtime-page, body.runtime-page #root { height: 100vh; overflow: hidden; }
+  ::selection { background: var(--acid); color: var(--ink); }
+
+  /* subtle grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.06;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  /* radial vignette */
+  body::after {
+    content:'';
+    position: fixed; inset:0;
+    pointer-events:none;
+    z-index:1;
+    background: radial-gradient(ellipse 90% 60% at 50% -10%, rgba(212,255,0,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse 70% 40% at 100% 110%, rgba(0,229,255,0.04) 0%, transparent 60%);
+  }
+}
+
+@layer components {
+  .font-display { font-family: "SF Pro Display", -apple-system, "Neue Haas Grotesk Display Pro", "Inter", sans-serif; font-feature-settings: "ss01","cv11"; letter-spacing: -0.03em; }
+  .font-mono { font-family: "SF Mono", "JetBrains Mono", ui-monospace, monospace; }
+  .font-serif { font-family: "New York", "Instrument Serif", "Times New Roman", serif; font-feature-settings: "ss01"; }
+
+  /* Apple-style liquid glass — subtle, dimensional, warm undertone */
+  .glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    border: 1px solid rgba(255,255,255,0.09);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.10),
+      inset 0 -1px 0 rgba(0,0,0,0.35),
+      0 24px 60px -12px rgba(0,0,0,0.55);
+  }
+
+  .glass-strong {
+    background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.14),
+      inset 0 -1px 0 rgba(0,0,0,0.4),
+      0 30px 80px -20px rgba(0,0,0,0.7);
+  }
+
+  .panel {
+    background: var(--ink-2);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Warm specular sheen for buttons (Apple product page vibe) */
+  .btn-primary {
+    background: linear-gradient(180deg, var(--ivory), #e6dcc4);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 0.85rem 1.6rem;
+    font-family: -apple-system, "SF Pro Display", "Inter", sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: transform 0.2s ease, box-shadow 0.25s ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 30px -10px rgba(245,239,224,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 16px 40px -10px rgba(245,239,224,0.45); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-ghost {
+    border: 1px solid rgba(255,255,255,0.14);
+    color: var(--ivory);
+    border-radius: 999px;
+    padding: 0.75rem 1.3rem;
+    background: rgba(255,255,255,0.03);
+    transition: border-color 0.2s ease, background 0.2s ease;
+    font-family: -apple-system, "SF Pro Display", "Inter", sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.06); }
+
+  .btn-acid {
+    background: var(--acid);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 0.65rem 1.4rem;
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+  }
+  .btn-acid:hover { transform: translateY(-1px); box-shadow: 0 0 40px var(--acid-glow); }
+
+  .label-tag {
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(245,239,224,0.5);
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+  }
+
+  /* animated cursor dot */
+  .cursor-dot {
+    position: fixed;
+    top: 0; left: 0;
+    width: 8px; height: 8px;
+    border-radius: 999px;
+    background: var(--ivory);
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: transform 0.15s ease, width 0.2s ease, height 0.2s ease;
+  }
+
+  .dash-connector {
+    stroke-dasharray: 4 4;
+    animation: dash 1.2s linear infinite;
+  }
+  @keyframes dash { to { stroke-dashoffset: -8; } }
+
+  .pulse-dot::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.25;
+    animation: pulseRing 1.6s ease-out infinite;
+  }
+  @keyframes pulseRing {
+    0% { transform: scale(0.6); opacity: 0.6; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+  .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
+  .thin-scroll::-webkit-scrollbar-thumb:hover { background: rgba(217,255,77,0.35); }
+
+  .live-pulse {
+    background: var(--acid);
+    box-shadow: 0 0 0 0 var(--acid);
+    animation: livePulse 2s infinite;
+  }
+  @keyframes livePulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(217,255,77,0.5); }
+    50% { box-shadow: 0 0 0 8px rgba(217,255,77,0); }
+  }
+
+  /* Huge display headline sizing (Apple product page) */
+  .display-hero {
+    font-family: "SF Pro Display", -apple-system, "Inter", sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.045em;
+    line-height: 0.92;
+  }
+
+  /* Ambient warm grain over the whole page */
+  .grain::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.94 0 0 0 0 0.85 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+  }
+}
