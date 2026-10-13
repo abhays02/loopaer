@@ -51,6 +51,8 @@ Reproduction (from repository root)
   Contact sheet: fps=3/16, scale=480:-1, tile=3x2 (six filled cells).
   Exact encoding commands are in render.mjs. Encoding is reproducible
   with the recorded tool versions; other versions may produce different bytes.
+  WebM container segment identifiers can vary between identical renders;
+  the illustrated timeline, dimensions, frame counts and durations are stable.
 
 Asset budgets (decimal bytes)
   Each GIF <= 2,000,000 bytes; both walkthrough formats together <= 10,000,000.
@@ -128,6 +130,12 @@ Final verification
   six-step pipeline explanation, reduced-motion stills, 360px document bounds,
   >=44px button heights, touch node activation, no-JS controls/transcript links.
   No JavaScript page errors. Curated preview excludes .git and backend/.env.
+  Interruption checks: SIGTERM during rendering exits 143; SIGINT during
+  --serve exits 130. In both cases the owned port closes and no new
+  loopaer-render-/loopaer-showcase- temporary directories remain.
+  Reproduce from docs/showcase with a free port:
+  node render.mjs & pid=$!; sleep 2; kill -TERM "$pid"; wait "$pid"
+  node render.mjs --serve & pid=$!; sleep 2; kill -INT "$pid"; wait "$pid"
   python -m pytest -q tests/test_showcase.py tests/test_platform_api.py:
   17 passed, 7 pre-existing deprecation warnings.
   git diff --check and JavaScript syntax checks: passed.
@@ -149,4 +157,12 @@ Final verification
   Repeat for walkthrough.webm and preview.gif.
   ffmpeg -v error -i assets/readme/walkthrough.mp4 -f null -
   Repeat for walkthrough.webm and preview.gif.
-  Final secret scan and PR Code Review/CodeQL results are reported on the PR.
+  Secret scan of all 26 authored/changed files: no secrets detected.
+  Automated PR review tool: unavailable (autofind binary absent). A separate
+  read-only implementation review reported no significant issues.
+  CodeQL: timed out before every language completed; Python completed with
+  one py/bad-tag-filter alert on the VTT arrow-count regex in test_showcase.py.
+  That test does not parse/sanitize HTML or handle untrusted input. Replaced
+  the regex with an exact string count to make its purpose unambiguous.
+  Full-language security analysis remains incomplete; no full pass claimed.
+  The validation service explicitly instructed not to retry the timed-out scan.

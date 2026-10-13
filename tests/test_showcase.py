@@ -59,7 +59,7 @@ def test_native_playback_and_static_fallback():
 def test_captions_cover_walkthrough():
     captions = (SHOWCASE / "captions.vtt").read_text()
     assert captions.startswith("WEBVTT")
-    assert len(re.findall(r"-->", captions)) == 5
+    assert captions.count(" --> ") == 5
     assert "00:00.000 --> 00:06.000" in captions
     assert "00:26.000 --> 00:32.000" in captions
 

@@ -13,6 +13,18 @@ const frames = await mkdtemp(path.join(tmpdir(), "loopaer-render-"));
 const site = await mkdtemp(path.join(tmpdir(), "loopaer-showcase-"));
 const serveOnly = process.argv.includes("--serve");
 const port = serveOnly ? 8765 : 8766;
+let server, browser, cleanupPromise;
+const cleanup = () => cleanupPromise ||= (async () => {
+  server?.kill();
+  try { if (browser) await browser.close(); }
+  finally {
+    await rm(frames, { recursive: true, force: true });
+    await rm(site, { recursive: true, force: true });
+  }
+})();
+process.once("SIGINT", () => { void cleanup().finally(() => process.exit(130)); });
+process.once("SIGTERM", () => { void cleanup().finally(() => process.exit(143)); });
+try {
 // Publish only the showcase and its explicit source references, never .env,
 // credentials, repository metadata or unrelated session evidence.
 const files = ["README.md", "LICENSE", "docs/showcase-evidence.txt",
@@ -32,13 +44,11 @@ const copyMedia = async () => {
   }
 };
 await copyMedia();
-const server = spawn(process.execPath, [fileURLToPath(new URL("node_modules/http-server/bin/http-server", import.meta.url)), site, "-a", "127.0.0.1", "-p", String(port), "-c", "-1", "--no-dotfiles", "-d", "false"], { stdio: "ignore" });
-let browser;
-try {
+server = spawn(process.execPath, [fileURLToPath(new URL("node_modules/http-server/bin/http-server", import.meta.url)), site, "-a", "127.0.0.1", "-p", String(port), "-c", "-1", "--no-dotfiles", "-d", "false"], { stdio: "ignore" });
   await mkdir(assets, { recursive: true });
   let ready = false;
   for (let attempt = 0; attempt < 50; attempt++) {
-    if (server.exitCode !== null) throw new Error("Preview server failed; port 8766 may be occupied");
+    if (server.exitCode !== null) throw new Error(`Preview server failed; port ${port} may be occupied`);
     try {
       const response = await fetch(`http://127.0.0.1:${port}/docs/showcase/index.html`);
       if (response.ok) { ready = true; break; }
@@ -51,8 +61,6 @@ try {
   if (serveOnly) {
     console.log(`Local tour: http://127.0.0.1:${port}/docs/showcase/ (curated snapshot; restart after edits)`);
     await new Promise((resolve) => {
-      process.once("SIGINT", resolve);
-      process.once("SIGTERM", resolve);
       server.once("exit", resolve);
     });
   } else {
@@ -169,8 +177,5 @@ try {
   console.log(await browser.version());
   }
 } finally {
-  if (browser) await browser.close();
-  server.kill();
-  await rm(frames, { recursive: true, force: true });
-  await rm(site, { recursive: true, force: true });
+  await cleanup();
 }
