@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Loopaer / Follow a question</title>
+  <link rel="stylesheet" href="showcase.css">
+  <script type="module" src="showcase.js"></script>
+</head>
+<body>
+  <a class="skip" href="#walkthrough">Skip to walkthrough</a>
+  <header>
+    <a href="../../README.md" class="wordmark">Loopaer <span>/ field notes</span></a>
+    <nav aria-label="Page"><a href="#walkthrough">Watch walkthrough</a><a href="#architecture">Explore interactive tour</a></nav>
+  </header>
+  <main>
+    <section class="intro">
+      <p class="eyebrow">01 / A question, with a paper trail</p>
+      <h1>Research is a process.<br>Keep the process visible.</h1>
+      <p>For developers exploring agentic research: Loopaer keeps plans, source findings, verification and human controls in one inspectable workspace. This is a code-grounded illustration, not a recording of a successful research run.</p>
+    </section>
+    <section id="walkthrough" aria-labelledby="watch-title">
+      <div class="section-heading"><h2 id="watch-title">Follow one question</h2><span class="eyebrow">32 seconds / silent, captioned</span></div>
+      <video id="film" controls playsinline preload="metadata" poster="../../assets/readme/poster.png" aria-label="Loopaer architecture and research walkthrough" aria-describedby="video-help">
+        <source src="../../assets/readme/walkthrough.webm" type="video/webm">
+        <source src="../../assets/readme/walkthrough.mp4" type="video/mp4">
+        <track default kind="captions" src="captions.vtt" srclang="en" label="English">
+        Your browser cannot play this video. <a href="../../assets/readme/walkthrough.mp4">Download the MP4</a> or read the transcript below.
+      </video>
+      <p id="video-help" class="note">Playback is your choice. Native controls support pause, seek and captions. Chapters below also scrub the film. No audio track.</p>
+      <nav class="chapters" aria-label="Walkthrough chapters">
+        <a href="#chapter-question" data-time="0">01 Question <span>0:00</span></a>
+        <a href="#chapter-plan" data-time="6">02 Plan <span>0:06</span></a>
+        <a href="#chapter-research" data-time="12">03 Research <span>0:12</span></a>
+        <a href="#chapter-verify" data-time="20">04 Verify / skill <span>0:20</span></a>
+        <a href="#chapter-boundary" data-time="26">05 Two engines <span>0:26</span></a>
+      </nav>
+      <details id="transcript">
+        <summary>Read the transcript / no-video walkthrough</summary>
+        <ol>
+          <li id="chapter-question"><strong>0:00 — Start with a question.</strong> A developer creates a session. The runtime emits SessionCreated. The example question, “How should we evaluate source quality?”, is synthetic and contains no private session data.</li>
+          <li id="chapter-plan"><strong>0:06 — Make the work inspectable.</strong> The planner uses OpenRouter to request a task graph. PlanReady and ReasoningTreeUpdated carry the result to the workspace. Fallback planning exists when model output cannot be parsed.</li>
+          <li id="chapter-research"><strong>0:12 — Follow the sources.</strong> Research queries arXiv and GitHub, then asks the model to extract facts, entities and gaps. SourceFetching and FactExtracted are observable events, not guarantees of useful findings.</li>
+          <li id="chapter-verify"><strong>0:20 — Ask what holds up.</strong> Verification asks the model to assess facts against collected sources. ConfidenceChanged reports a model judgment, not calibrated truth. The skill builder packages knowledge as a portable skill. Pause, resume, cancel and inject are cooperative controls on active loops.</li>
+          <li id="chapter-boundary"><strong>0:26 — Keep the boundary honest.</strong> React talks to FastAPI. The event bus fans out to WebSocket subscribers and persists events when a database is available. MongoDB supports the broader runtime. The command-center engine is separate: six scripted stages, mocked connectors and invented outcomes. In-memory demo mode is not a complete runtime substitute.</li>
+        </ol>
+      </details>
+    </section>
+    <section id="architecture" aria-labelledby="tour-title">
+      <p class="eyebrow">02 / Lift the cover</p>
+      <h2 id="tour-title">One workspace. Two different engines.</h2>
+      <p>Choose a node to pause at the architecture chapter, highlight it and read its source. Otherwise the diagram follows the film; reduced-motion mode holds each chapter still. On a phone, pan the diagram or read the notes below. Nothing here connects to a live service.</p>
+      <label class="static-control" data-enhancement hidden><input type="checkbox" id="static-mode"> Static diagrams (video remains user-controlled)</label>
+      <div class="scene-frame" tabindex="0" role="region" aria-label="Pannable architecture sketch; text notes below">
+        <svg id="scene" viewBox="0 0 960 540" role="img" aria-labelledby="scene-title scene-description">
+          <title id="scene-title">Research runtime architecture</title>
+          <desc id="scene-description">React sends requests to FastAPI. Runtime loops use OpenRouter and public sources. Events pass through the event bus to the workspace. MongoDB stores runtime data; the scripted command-center demo is separate.</desc>
+          <image href="../../assets/readme/architecture.svg" width="960" height="540"/>
+        </svg>
+      </div>
+      <div class="nodes" aria-label="Architecture nodes" data-enhancement hidden>
+        <button type="button" data-node="workspace" aria-controls="node-detail">React workspace</button>
+        <button type="button" data-node="runtime" aria-controls="node-detail">FastAPI + loops</button>
+        <button type="button" data-node="sources" aria-controls="node-detail">Sources + model</button>
+        <button type="button" data-node="events" aria-controls="node-detail">Event bus</button>
+        <button type="button" data-node="storage" aria-controls="node-detail">MongoDB</button>
+        <button type="button" data-node="demo" aria-controls="node-detail">Scripted demo</button>
+      </div>
+      <article id="node-detail" aria-live="polite" aria-atomic="true">
+        <h3>React workspace</h3><p>The runtime page presents loops, knowledge and controls. It consumes REST responses and WebSocket events.</p>
+        <a href="../../frontend/src/pages/Runtime.jsx">Read Runtime.jsx</a>
+      </article>
+      <noscript><p>JavaScript is off. The film, captions, transcript and the architecture notes below still work. Node selection and diagram motion require JavaScript.</p></noscript>
+      <details open>
+        <summary>Architecture notes / static alternative</summary>
+        <dl>
+          <dt>React workspace</dt><dd><a href="../../frontend/src/App.js">App.js</a> preserves landing, auth, runtime, diff and snapshot routes.</dd>
+          <dt>FastAPI + loops</dt><dd><a href="../../backend/server.py">server.py</a> routes requests; <a href="../../backend/runtime.py">runtime.py</a> schedules planner, research, verification and skill-builder tasks.</dd>
+          <dt>Sources + model</dt><dd><a href="../../backend/sources.py">sources.py</a> queries arXiv/GitHub. <a href="../../backend/openrouter.py">openrouter.py</a> streams model output. Availability and model quality vary.</dd>
+          <dt>Event bus</dt><dd><a href="../../backend/eventbus.py">eventbus.py</a> buffers and broadcasts events; persistence is conditional on a database. WebSocket is /api/ws/{sid}; the demo uses a run ID in the same route.</dd>
+          <dt>MongoDB</dt><dd>Required for the full runtime API, including direct database access in sessions, skills, auth, generated UI and snapshots. Demo fallback is narrower.</dd>
+          <dt>Scripted demo</dt><dd><a href="../../backend/commandcenter.py">commandcenter.py</a> advances Intake, Plan, Connect, Reason, Verify and Deliver with timed events, not enterprise integrations.</dd>
+        </dl>
+      </details>
+    </section>
+    <section aria-labelledby="pipeline-title">
+      <p class="eyebrow">03 / The demo is not the research loop</p>
+      <h2 id="pipeline-title">Tour the scripted pipeline</h2>
+      <p>These six steps describe the command-center simulation. Use the step buttons or read the ordered list. This tour does not start a backend run.</p>
+      <div class="nodes" id="pipeline-controls" aria-label="Pipeline steps" data-enhancement hidden></div>
+      <p id="pipeline-description" aria-live="polite" aria-atomic="true" data-enhancement hidden>Choose a step, or read all six below.</p>
+      <ol id="pipeline">
+        <li><strong>Intake.</strong> A fixed scenario supplies a synthetic brief.</li>
+        <li><strong>Plan.</strong> The scripted engine narrates a work sequence.</li>
+        <li><strong>Connect.</strong> Connector names are mocked catalog entries; no enterprise system is queried.</li>
+        <li><strong>Reason.</strong> Progress is timed; this engine does not perform the runtime's model-driven research.</li>
+        <li><strong>Verify.</strong> The demo advances to another stage, not independent validation.</li>
+        <li><strong>Deliver.</strong> Completion ends the scenario. Invented outcome figures are not measured results.</li>
+      </ol>
+    </section>
+  </main>
+  <footer>Local documentation, not a deployment. <a href="../../README.md">Setup and limitations</a> · <a href="../showcase-evidence.txt">Asset provenance and checks</a> · <a href="../../LICENSE">Repository license</a></footer>
+</body>
+</html>

@@ -6,13 +6,18 @@ authentication, and is safe to call from the marketing surface.
 
 Two promises shape the whole surface:
 
-1. The backend works without MongoDB. When the database is unreachable,
+1. The command-center demo works without MongoDB. When the database is unreachable,
    storage falls back to memory and `/api/platform/health` reports it.
    Nothing on the landing experience may assume persisted storage.
 2. The existing runtime contract is untouched. Sessions, auth, memory,
    skills, diff, snapshots, and the `/api/ws/{sid}` websocket behave exactly
    as before. Pipeline runs simply reuse that same websocket route, keyed by
    run id instead of session id.
+
+The fallback is not a guarantee for the broader runtime API: `server.py`
+still accesses `db` directly for sessions, skills, auth, generated UI and
+snapshots. Those endpoints require reachable MongoDB. Demo health describes
+demo storage, not full-runtime readiness.
 
 Base URL: the value of `REACT_APP_BACKEND_URL` in the frontend environment.
 

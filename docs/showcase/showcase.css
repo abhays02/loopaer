@@ -1,0 +1,71 @@
+@font-face {
+  font-family: "Cabinet Grotesk";
+  src: url("../../frontend/src/landing/fonts/cabinet-grotesk-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cabinet Grotesk";
+  src: url("../../frontend/src/landing/fonts/cabinet-grotesk-800.woff2") format("woff2");
+  font-weight: 800;
+  font-display: swap;
+}
+:root { color-scheme: dark; --void: #050505; --panel: #101010; --text: #edede6; --muted: #aaa9a0; --signal: #d4ff00; --line: #41413b; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--void); color: var(--text); font: 500 18px/1.6 "Cabinet Grotesk", sans-serif; }
+a { color: inherit; text-underline-offset: .22em; }
+a:hover { color: var(--signal); }
+header, main, footer { max-width: 1120px; margin: auto; padding: 24px; }
+header { display: flex; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--line); }
+header nav { display: flex; flex-wrap: wrap; gap: 12px; }
+header a { display: inline-flex; align-items: center; min-height: 44px; }
+.wordmark { font-size: 24px; font-weight: 800; text-decoration: none; gap: 12px; }
+.wordmark span, .eyebrow, .note, .chapters span { font: 13px/1.7 ui-monospace, monospace; color: var(--muted); }
+.eyebrow { letter-spacing: .08em; }
+section { margin: 64px 0 96px; scroll-margin-top: 24px; }
+.intro { max-width: 790px; margin-top: 72px; }
+h1 { font-size: clamp(38px, 6vw, 72px); letter-spacing: -.04em; line-height: 1.04; margin: 24px 0; font-weight: 800; }
+h2 { font-size: clamp(28px, 4vw, 42px); letter-spacing: -.025em; line-height: 1.15; font-weight: 800; }
+h3 { font-size: 25px; margin: 0; }
+p { max-width: 760px; color: var(--muted); }
+.section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+video, .scene-frame { display: block; width: 100%; border: 1px solid var(--line); background: #0b0b0b; }
+video { aspect-ratio: 16/9; }
+.scene-frame { overflow-x: auto; }
+.scene-frame svg { width: 100%; min-width: 640px; display: block; height: auto; }
+.chapters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 24px 0; }
+.chapters a, button { border: 1px solid var(--line); background: var(--panel); color: var(--text); padding: 12px 16px; min-height: 48px; font: inherit; text-align: left; cursor: pointer; }
+.chapters a { text-decoration: none; }
+.chapters span { display: block; }
+[aria-current="true"], button[aria-pressed="true"] { border-color: var(--signal); color: var(--signal); }
+button:hover { border-color: var(--text); }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 4px; }
+.static-control { display: flex; align-items: center; gap: 12px; min-height: 48px; margin-bottom: 16px; }
+input { width: 24px; height: 24px; accent-color: var(--signal); }
+.nodes { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0; }
+article { padding: 24px; border-left: 2px solid var(--signal); background: var(--panel); min-height: 190px; }
+details { border-top: 1px solid var(--line); margin-top: 32px; }
+summary { cursor: pointer; padding: 16px 0; min-height: 48px; }
+li { margin: 16px 0; padding-left: 8px; }
+dt { font-weight: 800; margin-top: 20px; }
+dd { margin-left: 0; color: var(--muted); }
+#pipeline li[aria-current="step"] { border-left: 2px solid var(--signal); color: var(--signal); }
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; padding-bottom: 48px; }
+.skip { position: absolute; top: -100px; padding: 12px; background: var(--panel); }
+.skip:focus { top: 0; z-index: 5; }
+body.render { margin: 0; }
+body.render header, body.render footer, body.render main > :not(#architecture), body.render #architecture > :not(.scene-frame) { display: none; }
+body.render main, body.render #architecture { width: 960px; padding: 0; margin: 0; max-width: none; }
+body.render .scene-frame { border: 0; }
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  header { flex-direction: column; gap: 8px; }
+  header, main, footer { padding: 20px; }
+  section { margin: 48px 0 64px; }
+  .chapters { grid-template-columns: 1fr 1fr; }
+  .nodes button { flex: 1 1 140px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
