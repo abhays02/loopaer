@@ -12,7 +12,7 @@ Captured 2026-08-12 on branch `task/frontend-command-center-20260812-172446`, co
 ## Reproduce
 
 ```bash
-# terminal 1 — backend (MongoDB optional)
+# terminal 1 — backend (MongoDB optional for command-center demo only)
 cd backend
 python -m uvicorn server:app --host 127.0.0.1 --port 8000
 
@@ -24,6 +24,11 @@ npm start        # http://localhost:3000
 cd frontend
 CI=false npm run build
 ```
+
+Scope clarification: this historical smoke run exercised the landing and
+scripted pipeline, not the full runtime. Runtime endpoints still access
+MongoDB directly; in-memory demo startup does not make auth, sessions,
+skills or snapshots fully usable without a database.
 
 ## Production build
 

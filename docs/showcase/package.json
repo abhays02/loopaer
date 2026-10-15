@@ -1,0 +1,15 @@
+{
+  "name": "loopaer-docs-showcase",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated local documentation renderer; never included in the application",
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs",
+    "serve": "node render.mjs --serve"
+  },
+  "devDependencies": {
+    "http-server": "14.1.1",
+    "playwright": "1.64.0"
+  }
+}

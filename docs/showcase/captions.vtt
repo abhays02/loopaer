@@ -1,0 +1,21 @@
+WEBVTT
+
+00:00.000 --> 00:06.000
+A question becomes a session.
+Illustration only, not a real research result.
+
+00:06.000 --> 00:12.000
+The planner requests a task graph through OpenRouter.
+PlanReady makes that structure observable.
+
+00:12.000 --> 00:20.000
+Research queries arXiv and GitHub.
+The model extracts facts, entities and gaps.
+
+00:20.000 --> 00:26.000
+Verification reports model judgments, not calibrated truth.
+Skill builder packages knowledge; humans control active loops.
+
+00:26.000 --> 00:32.000
+React, FastAPI, the event bus and MongoDB support the runtime.
+The command-center pipeline is a separate scripted demo.
